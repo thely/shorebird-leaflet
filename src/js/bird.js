@@ -29,6 +29,10 @@ L.BirdMarker = L.Marker.extend({
 
 		return { azimuth: angle, distance: dist };
 	},
+	displayWikiData: function(speciesData) {
+		console.log("checking out bird "+this.options.id);
+		console.log(this.options);
+	}
 });
 
 L.birdMarker = function(id, options) {

@@ -11,6 +11,7 @@ import { B_POPSCALE } from "./settings.js";
 function Population(map, layer) {
 	this.birds = [];
 	this.visibleBirds = [];
+	this.day = 0;
 	var useData = {};
 	var tiles = {};
 	let center = map.getSize().divideBy(2);
@@ -31,6 +32,7 @@ function Population(map, layer) {
 		let bCount = 0;
 
 		let today = useData["birds_and_days"][day].count;
+		this.day = day;
 		for (let i = 0; i < today.length; i++) { // species loop
 			if (today[i] > 0) {
 				let pop = Math.ceil(today[i] * B_POPSCALE);
@@ -73,10 +75,17 @@ function Population(map, layer) {
 			species: species,
 			info: bird_data[species],
 		}).bindTooltip(bird_data[species].common_name).openTooltip()
-		.on("click", function(e) { console.log(this.options); })
-		.addTo(layer);
+		.on("click", function(e) {
+			bird.displayWikiData(popData.call(this, species));
+		}).addTo(layer);
 
 		return bird;
+	}
+
+	function popData(species) {
+		let totalPop = useData.birds_and_days[this.day].count[species];
+		let showPop = totalPop * B_POPSCALE;
+		return { total: totalPop, shown: showPop };
 	}
 
 	// returns a random tile (from list) based on random habitat
