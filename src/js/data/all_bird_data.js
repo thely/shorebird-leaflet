@@ -1345,7 +1345,7 @@ var bird_data = [
     "start": 3600,
     "end": 3656.1826530612243,
     "common_name": "Northern Gannet",
-    "scientific_name": "Sula bassanus",
+    "scientific_name": "Morus bassanus",
     "land_preference": [
       20
     ]

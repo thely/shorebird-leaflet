@@ -2,6 +2,7 @@
 node_modules/
 audio/
 images/
+css/
 bundle.js
 bundle.js.map
 style.css

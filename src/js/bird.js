@@ -2,6 +2,8 @@ var L = require("leaflet");
 var C = require("chance").Chance();
 var Victor = require("victor");
 
+import wiki from "wikijs";
+
 L.BirdMarker = L.Marker.extend({
 	options: {
 		id: -1,
@@ -31,7 +33,25 @@ L.BirdMarker = L.Marker.extend({
 	},
 	displayWikiData: function(speciesData) {
 		console.log("checking out bird "+this.options.id);
-		console.log(this.options);
+		wiki().page(this.options.info.scientific_name).then(page => {
+			Promise.all([page.summary(), page.mainImage(), page.url()]).then(c => {
+				let summary = c[0].split(" ").splice(0,75).join(" ") + "...";
+				let content = 
+					`<a href="${c[2]}">
+					<h4 class="birdName">${this.options.info.common_name} 
+						<span class="science">(${this.options.info.scientific_name})</span>
+					</h4></a>
+					<p class="birdImage"><img src="${c[1]}" /></p>
+					<p class="birdSummary">${summary}</p>
+					<p class="popData">${speciesData.total} seen all day; ${speciesData.shown} currently on map</p>`;
+				this.bindPopup(content, {
+					className: "birdPopup",
+					maxHeight: 300
+				}).openPopup();
+			}, (err) => {
+				console.log(err);
+			})
+		});
 	}
 });
 
