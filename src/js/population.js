@@ -37,7 +37,11 @@ function Population(map, layer) {
 			if (today[i] > 0) {
 				let pop = Math.ceil(today[i] * B_POPSCALE);
 				let color = C.color({format: "hex"});
-				let icon = L.divIcon({className: "bird-icon-"+i, html: makeMarkerIcon(color)});
+				let icon = L.divIcon({
+					className: "bird-icon bird-icon-"+i,
+					html: makeMarkerIcon(color)
+					// html: "<i class='fas fa-crow'></i>",
+				});
 
 				for (let j = 0; j < pop; j++) { // single bird loop
 					this.birds.push(makeBird.call(this, i, icon, bCount));

@@ -1,6 +1,20 @@
+body {
+	margin: 0;
+	padding: 0;
+}
+
+html, body {
+	height: 100%;
+}
+
 #map {
 	height: 500px;
 	width: 700px;
+}
+
+.bird-icon {
+	height: 18px;
+	width: 18px;
 }
 
 .birdPopup {
@@ -24,3 +38,8 @@
 	}
 }
 
+
+.leaflet-sidebar .fas,
+.leaflet-sidebar .fa {
+	line-height: 40px;
+}
