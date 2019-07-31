@@ -16,7 +16,8 @@ L.BirdMarker = L.Marker.extend({
 		center: {},
 		azimuth: 0,
 		distance: 0,
-		species: 0
+		species: 0,
+		wikiData: ""
 	},
 	audioPosition: function(position) {
 		// pos is the passed in latlng converted to px
@@ -32,6 +33,13 @@ L.BirdMarker = L.Marker.extend({
 		return { azimuth: angle, distance: dist };
 	},
 	displayWikiData: function(speciesData) {
+		if (this.options.wikiData) {
+			this.bindPopup(this.options.wikiData, {
+				className: "birdPopup",
+				maxHeight: 300
+			}).openPopup();
+			return;
+		}
 		console.log("checking out bird "+this.options.id);
 		wiki().page(this.options.info.scientific_name).then(page => {
 			Promise.all([page.summary(), page.mainImage(), page.url()]).then(c => {
@@ -44,6 +52,7 @@ L.BirdMarker = L.Marker.extend({
 					<p class="birdImage"><img src="${c[1]}" /></p>
 					<p class="birdSummary">${summary}</p>
 					<p class="popData">${speciesData.total} seen all day; ${speciesData.shown} currently on map</p>`;
+					this.options.wikiData = content;
 				this.bindPopup(content, {
 					className: "birdPopup",
 					maxHeight: 300

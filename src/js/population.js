@@ -15,6 +15,7 @@ function Population(map, layer) {
 	var useData = {};
 	var tiles = {};
 	let center = map.getSize().divideBy(2);
+	this.colorList = [];
 
 	this.getBirds = function() {
 		return this.birds;
@@ -22,6 +23,35 @@ function Population(map, layer) {
 
 	this.getVisibleBirds = function() {
 		return this.visibleBirds;
+	}
+
+	this.highlightSpecies = function(species) {
+		let prev = document.getElementsByClassName("species-active");
+		while(prev.length) {
+			prev[0].classList.toggle("species-active");
+		};
+
+		let next = document.getElementsByClassName("bird-icon-"+species);
+		for (let item of next) {
+			item.classList.add("species-active");
+		};
+
+		for (let i = 0; i < this.birds.length; i++) {
+			if (this.birds[i].options.species == species) {
+				return this.birds[i];
+				// ret.push(this.birds[i]);
+			}
+		}
+	}
+
+	this.getColor = function(species) {
+		return this.colorList[species];
+	}
+
+	this.recenter = function() {
+		for (let i = 0; i < this.birds.length; i++) {
+			this.birds[i].options.center = map.getSize().divideBy(2);
+		}
 	}
 
 	this.generateBirds = function(data, day, t) {
@@ -37,6 +67,7 @@ function Population(map, layer) {
 			if (today[i] > 0) {
 				let pop = Math.ceil(today[i] * B_POPSCALE);
 				let color = C.color({format: "hex"});
+				this.colorList[i] = color;
 				let icon = L.divIcon({
 					className: "bird-icon bird-icon-"+i,
 					html: makeMarkerIcon(color)
