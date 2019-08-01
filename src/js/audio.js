@@ -41,6 +41,8 @@ function AudioManager() {
 
 	this.lastAmbi = -1;
 	this.audioLoaded = false;
+
+	this.muteList = [];
 }
 
 AudioManager.prototype.setup = function(today, birdData) {
@@ -70,6 +72,8 @@ AudioManager.prototype.reset = function(allBirds) {
 	for (var i = this.nodes.active.length - 1; i >= 0; i--) {
 		disableNode.call(this, i, allBirds);
 	}
+
+	this.muteList = [];
 	console.log("Here's our status after resetting: ");
 	console.log(this.nodes.active);
 	console.log(this.nodes.inactive);
@@ -111,7 +115,9 @@ AudioManager.prototype.update = function(birds, allBirds, habitat) {
 	// adding new birds if they don't have nodes
 	for (let i = 0; i < birds.length; i++) {
 		// if we weren't visible last frame, we haven't been added yet
-		if (!birds[i].options.hasAudioNode && this.nodes.inactive.length > 0) {
+		if (!birds[i].options.hasAudioNode 
+				&& this.nodes.inactive.length > 0
+				&& this.muteList.indexOf(birds[i].options.species) == -1) {
 			enableNode.call(this, birds[i]);
 		}
 	}
@@ -124,6 +130,7 @@ function disableNode(i, allBirds) {
 	let b1 = __birdFromId(allBirds, this.nodes.active[i].birdID);
 	b1[0].options.hasAudioNode = false; // this should be illegal!!!
 	this.nodes.active[i].birdID = null;
+	this.nodes.active[i].species = -1;
 	let n = this.nodes.active.splice(i, 1);
 	this.nodes.inactive.push(n[0]);
 }
@@ -133,6 +140,7 @@ function enableNode(bird) {
 	let n = this.nodes.inactive.pop();
 	n.birdID = bird.options.id;
 	bird.options.hasAudioNode = true;
+	n.species = bird.options.species;
 	n.fadeout = false;
 
 	// let file = __getFile.call(this, birds[i].name);
@@ -150,6 +158,21 @@ AudioManager.prototype.moveVisibleNode = function(b, n) {
 	// if (b.options.visible.now) {
 	// 	// console.log("in view");
 	// }
+}
+
+AudioManager.prototype.muteSpecies = function(species, muted, allBirds) {
+	if (muted) {
+		this.muteList.push(species);
+		for (let i = this.nodes.active.length - 1; i >= 0; i--){
+			if (this.nodes.active[i].species == species) {
+				disableNode.call(this, i, allBirds);
+			}
+		}		
+	}
+	else {
+		this.muteList.splice(this.muteList.indexOf(species), 1);
+	}
+
 }
 
 AudioManager.prototype.master = function(val) {

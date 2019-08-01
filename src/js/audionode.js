@@ -11,6 +11,7 @@ function AudioNode(ctx, hrtf, source) {
 	this.birdID = null;
 	this.ctx = ctx;
 	this.source = source;
+	this.species = -1;
 
 	this.SoundSource = ctx.createBufferSource(); 
 	this.SoundSource.buffer = source;
