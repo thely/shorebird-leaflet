@@ -39,13 +39,22 @@ html, body {
 	}
 }
 
+#bird-data-replace {
+	.birdImage {
+		max-width: 100%;
+
+		img {
+			max-width: 100%;
+		}
+	}
+}
+
 .leaflet-sidebar .fas,
 .leaflet-sidebar .fa {
 	line-height: 40px;
 }
 
-#bird-table {
-	
+table {
 	border-collapse: collapse;
 	font-size: inherit;
 
@@ -62,6 +71,10 @@ html, body {
 		font-size: 12px;
 	}
 
+}
+
+// species table in the per-day chart
+#bird-table {
 	.bird-shade {
 		border: 0px solid transparent;
 	}
@@ -74,6 +87,14 @@ html, body {
 	tbody tr.row-active {
 		background-color: grey;
 	}
+}
+
+// species population for all islands and days
+
+.bird-all-days {
+	float: left;
+	margin-bottom: 2em;
+	margin-right: 2em;
 }
 
 .species-active {

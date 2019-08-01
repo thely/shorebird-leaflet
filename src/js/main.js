@@ -13,6 +13,7 @@ import AudioManager from "./audio.js";
 import cobb_data from './data/cobb_data.js';
 import hog_data  from './data/hog_data.js';
 import bird_data  from './data/all_bird_data.js';
+import wiki_data from "./data/bird_wiki_data.js";
 import pixelColors from './data/colorlist.js';
 
 import { B_POPSCALE } from "./settings.js";
@@ -110,7 +111,7 @@ sidebar.addPanel({
 	id: "bird-data",
 	tab: "<i class='fas fa-feather'></i>",
 	title: "Species Data",
-	pane: "<p>lorem ipsum etc</p>",
+	pane: "<div id='bird-data-replace'><p>Select a bird on the map to see more information.</p></div>",
 });
 
 // ----------------------------------------
@@ -121,11 +122,11 @@ function popTable(day) {
 	let today = useData.birds_and_days[day];
 	let p = `<p>Population data for ${today.date}. Sort by species, population all day, and population visible right now.</p>`;
 	let content = `<thead><tr>
-		<th role="columnheader">Species</th>
-		<th role="columnheader">All Day</th>
-		<th role="columnheader">Scaled</th>
-		<th role="columnheader" data-sort-method="none">Color</th>
-		<th role="columnheader" data-sort-method="none">Mute</th>
+		<th data-sort-default>Species</th>
+		<th>All Day</th>
+		<th>Scaled</th>
+		<th data-sort-method="none">Color</th>
+		<th data-sort-method="none">Mute</th>
 		</tr></thead><tbody>`;
 	for (let i = 0; i < today.count.length; i++) {
 		if (today.count[i] > 0) {
@@ -146,24 +147,67 @@ function popTable(day) {
 	// if name is clicked in panel, show on map
 	for (let i = 0; i < today.count.length; i++) {
 		if (today.count[i] > 0) {
-			// full row listener
-			document.getElementById("table-species-"+i).addEventListener('click', function(){
-				let prev = document.getElementsByClassName("row-active");
-				while (prev.length) {
-					prev[0].classList.remove("row-active");
-				};
-				this.classList.add("row-active");
-				let b = parseInt(this.attributes["species-index"].value);
-				let s = pop.highlightSpecies(b);
-				map.setView(s.getLatLng());
-			});
+	
 			// checkbox mute listeners
-			document.getElementById("species-mute-"+i).addEventListener('change click', function(e){
-				// sfx.muteSpecies(this.value);
-				e.stopPropagation();
-			});
+			let elem = document.querySelector("input#species-mute-"+i);
+
+			"change click".split(" ")
+			    .map(name => elem.addEventListener(name, function(e) {
+			    	console.log(`species ${this.value}, muting? ${this.checked}`);
+					e.stopPropagation();
+					// sfx.muteSpecies(this.value, this.checked);
+			    }, false));
+
+			// full row listener
+			document.getElementById("table-species-"+i)
+				.addEventListener('click', listenSpeciesRow);
 		}
 	}
+}
+
+function listenSpeciesRow() {
+	let prev = document.getElementsByClassName("row-active");
+	while (prev.length) {
+		prev[0].classList.remove("row-active");
+	};
+	this.classList.add("row-active");
+	let b = parseInt(this.attributes["species-index"].value);
+	let s = pop.highlightSpecies(b);
+	map.setView(s.getLatLng());
+	document.getElementById("bird-data-replace").innerHTML = displayWikiSidebarPane(b);
+	sidebar.open('bird-data');
+}
+
+function displayWikiSidebarPane(species) {
+	let content = 
+		`<a href="${wiki_data[species].url}">
+		<h4 class="birdName">${bird_data[species].common_name} 
+			<span class="science">(${bird_data[species].scientific_name})</span>
+		</h4></a>
+		<p class="birdImage"><img src="${wiki_data[species].image}" /></p>
+		<blockquote class="birdSummary">${wiki_data[species].summary}</blockquote>`;
+
+	// stats across all days and islands
+	content += speciesAllDaysTable("Cobb Island", cobb_data, species);
+	content += speciesAllDaysTable("Hog Island", hog_data, species);
+	
+	return content;
+}
+
+function speciesAllDaysTable(island, data, species) {
+	let content = `<div class="bird-all-days">
+		<h4>${island}</h4><table><thead><tr>
+		<td>Date</td>
+		<td>Population</td>
+		</tr></thead><tbody>`;
+	for (let i = 0; i < data.birds_and_days.length; i++) {
+		content += `<tr>
+			<td>${data.birds_and_days[i].date}
+			<td>${data.birds_and_days[i].count[species]}</td>
+			</tr>`;
+	}
+	content += `</tbody></table></div>`;
+	return content;
 }
 
 

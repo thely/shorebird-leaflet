@@ -5,6 +5,7 @@ var L = require("leaflet");
 var C = require('chance').Chance();
 
 import bird_data from "./data/all_bird_data.js";
+import wiki_data from "./data/bird_wiki_data.js";
 import "./bird.js";
 import { B_POPSCALE } from "./settings.js";
 
@@ -109,10 +110,12 @@ function Population(map, layer) {
 			center: center,
 			species: species,
 			info: bird_data[species],
+			wiki: wiki_data[species]
 		}).bindTooltip(bird_data[species].common_name).openTooltip()
 		.on("click", function(e) {
-			bird.displayWikiData(popData(species));
-			// bird.displayWikiData();
+			// bird.displayBirdData(popData(species));
+			let formatted = bird.displayWikiData(popData(species));
+			document.getElementById("bird-data-replace").innerHTML = formatted;
 		}).addTo(layer);
 
 		return bird;

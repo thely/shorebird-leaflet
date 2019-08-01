@@ -27,7 +27,6 @@
     "serve": "^11.1.0",
     "standardized-audio-context": "^20.1.12",
     "tablesort": "^5.1.0",
-    "victor": "^1.1.0",
-    "wikijs": "^5.5.1"
+    "victor": "^1.1.0"
   }
 }

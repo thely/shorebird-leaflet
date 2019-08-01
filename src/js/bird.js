@@ -2,8 +2,6 @@ var L = require("leaflet");
 var C = require("chance").Chance();
 var Victor = require("victor");
 
-import wiki from "wikijs";
-
 L.BirdMarker = L.Marker.extend({
 	options: {
 		id: -1,
@@ -13,11 +11,11 @@ L.BirdMarker = L.Marker.extend({
 			then: false
 		},
 		info: {},
+		wiki: {},
 		center: {},
 		azimuth: 0,
 		distance: 0,
 		species: 0,
-		wikiData: ""
 	},
 	audioPosition: function(position) {
 		// pos is the passed in latlng converted to px
@@ -33,34 +31,21 @@ L.BirdMarker = L.Marker.extend({
 		return { azimuth: angle, distance: dist };
 	},
 	displayWikiData: function(speciesData) {
-		if (this.options.wikiData) {
-			this.bindPopup(this.options.wikiData, {
-				className: "birdPopup",
-				maxHeight: 300
-			}).openPopup();
-			return;
-		}
-		console.log("checking out bird "+this.options.id);
-		wiki().page(this.options.info.scientific_name).then(page => {
-			Promise.all([page.summary(), page.mainImage(), page.url()]).then(c => {
-				let summary = c[0].split(" ").splice(0,75).join(" ") + "...";
-				let content = 
-					`<a href="${c[2]}">
-					<h4 class="birdName">${this.options.info.common_name} 
-						<span class="science">(${this.options.info.scientific_name})</span>
-					</h4></a>
-					<p class="birdImage"><img src="${c[1]}" /></p>
-					<p class="birdSummary">${summary}</p>
-					<p class="popData">${speciesData.total} seen all day; ${speciesData.shown} currently on map</p>`;
-					this.options.wikiData = content;
-				this.bindPopup(content, {
-					className: "birdPopup",
-					maxHeight: 300
-				}).openPopup();
-			}, (err) => {
-				console.log(err);
-			})
-		});
+		let content = 
+			`<a href="${this.options.wiki.url}">
+			<h4 class="birdName">${this.options.info.common_name} 
+				<span class="science">(${this.options.info.scientific_name})</span>
+			</h4></a>
+			<p class="birdImage"><img src="${this.options.wiki.image}" /></p>
+			<p class="birdSummary">${this.options.wiki.summary}</p>
+			<p class="popData">${speciesData.total} seen all day; ${speciesData.shown} currently on map</p>`;
+
+		this.bindPopup(content, {
+			className: "birdPopup",
+			maxHeight: 300
+		}).openPopup();
+
+		return content;
 	}
 });
 
