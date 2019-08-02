@@ -9,6 +9,8 @@ import wiki_data from "./data/bird_wiki_data.js";
 import "./bird.js";
 import { B_POPSCALE } from "./settings.js";
 
+import "./ui/popups.js";
+
 function Population(map, layer) {
 	this.birds = [];
 	this.visibleBirds = [];
@@ -39,6 +41,15 @@ function Population(map, layer) {
 
 		for (let i = 0; i < this.birds.length; i++) {
 			if (this.birds[i].options.species == species) {
+				let formatted = this.birds[i].displayWikiData(popData(species));
+				let popup = L.eventPopup({
+					className: "birdPopup",
+					maxHeight: 300,
+					species: this.birds[i].options.species
+				}).setContent(formatted);
+				// console.log(popup);
+
+				this.birds[i].unbindPopup().bindPopup(popup).openPopup();
 				return this.birds[i];
 				// ret.push(this.birds[i]);
 			}
@@ -116,6 +127,15 @@ function Population(map, layer) {
 		.on("click", function(e) {
 			// bird.displayBirdData(popData(species));
 			let formatted = bird.displayWikiData(popData(species));
+			let popup = L.eventPopup({
+				className: "birdPopup",
+				maxHeight: 300,
+				species: species
+			}).setContent(formatted);
+			// console.log(popup);
+
+			bird.unbindPopup().bindPopup(popup).openPopup();
+			// console.log(popup);
 			// document.getElementById("bird-data-replace").innerHTML = formatted;
 		}).addTo(layer);
 
