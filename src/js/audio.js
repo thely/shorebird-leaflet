@@ -43,6 +43,7 @@ function AudioManager() {
 	this.audioLoaded = false;
 
 	this.muteList = [];
+	this.isMuted = false;
 }
 
 AudioManager.prototype.setup = function(today, birdData) {
@@ -160,8 +161,9 @@ AudioManager.prototype.moveVisibleNode = function(b, n) {
 	// }
 }
 
-AudioManager.prototype.muteSpecies = function(species, muted, allBirds) {
-	if (muted) {
+AudioManager.prototype.muteSpecies = function(spec, muted, allBirds) {
+	let species = parseInt(spec);
+	if (muted && this.muteList.indexOf(species) == -1) {
 		this.muteList.push(species);
 		for (let i = this.nodes.active.length - 1; i >= 0; i--){
 			if (this.nodes.active[i].species == species) {
@@ -169,18 +171,23 @@ AudioManager.prototype.muteSpecies = function(species, muted, allBirds) {
 			}
 		}		
 	}
-	else {
+	else if (!muted) {
 		this.muteList.splice(this.muteList.indexOf(species), 1);
 	}
 
 }
 
 AudioManager.prototype.master = function(val) {
-	if (val != 0) { 
-		this.masterGain.gain.exponentialRampToValueAtTime(val, this.context.currentTime + 0.5);
+	if (val != 0 && !this.isMuted) { //changing gain
+		this.masterGain.gain.exponentialRampToValueAtTime(val, this.ctx.currentTime + 0.5);
 	}
-	else {
-		this.masterGain.gain.value = 0;	
+	else if (val != 0 && this.isMuted) { //unmuting
+		this.masterGain.gain.value = val;
+		this.isMuted = false;
+	}
+	else { //muting
+		this.masterGain.gain.value = 0;
+		this.isMuted = true;
 	}
 }
 
