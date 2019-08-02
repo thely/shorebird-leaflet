@@ -100,8 +100,8 @@ function Population(map, layer) {
 	}
 
 	function makeBird(species, icon, id) {
-		let t = pickHabitatTile(species) - 1;
-		let lat = tiles.getTile(t).getLatLngs()[0][0];
+		let t = pickHabitatTile(species);
+		let lat = tiles.getTile(t.tile).getLatLngs()[0][0];
 		let birdCoord = makeBirdPos(lat, useData.scaling);
 		let bird = L.birdMarker(birdCoord.latlng, {
 			icon: icon, 
@@ -110,12 +110,13 @@ function Population(map, layer) {
 			center: center,
 			species: species,
 			info: bird_data[species],
-			wiki: wiki_data[species]
+			wiki: wiki_data[species],
+			habitat: t.habitat
 		}).bindTooltip(bird_data[species].common_name).openTooltip()
 		.on("click", function(e) {
 			// bird.displayBirdData(popData(species));
 			let formatted = bird.displayWikiData(popData(species));
-			document.getElementById("bird-data-replace").innerHTML = formatted;
+			// document.getElementById("bird-data-replace").innerHTML = formatted;
 		}).addTo(layer);
 
 		return bird;
@@ -133,7 +134,10 @@ function Population(map, layer) {
 		while (!(hab.toString() in useData.habitats_in_pixels)) {
 			hab = C.pickone(bird_data[b].land_preference);
 		}
-		return C.pickone(useData.habitats_in_pixels[hab]);
+		return {
+			habitat: hab,
+			tile: C.pickone(useData.habitats_in_pixels[hab]) - 2 // TODO: why is -2 necessary??
+		};
 	}
 
 	// determine marker start position from tile position

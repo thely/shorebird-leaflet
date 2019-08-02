@@ -2,6 +2,8 @@ var L = require("leaflet");
 var C = require("chance").Chance();
 var Victor = require("victor");
 
+import land_types from './data/land_types.js';
+
 L.BirdMarker = L.Marker.extend({
 	options: {
 		id: -1,
@@ -16,6 +18,7 @@ L.BirdMarker = L.Marker.extend({
 		azimuth: 0,
 		distance: 0,
 		species: 0,
+		habitat: 0
 	},
 	audioPosition: function(position) {
 		// pos is the passed in latlng converted to px
@@ -32,13 +35,19 @@ L.BirdMarker = L.Marker.extend({
 	},
 	displayWikiData: function(speciesData) {
 		let content = 
-			`<a href="${this.options.wiki.url}">
+			`
+			
 			<h4 class="birdName">${this.options.info.common_name} 
 				<span class="science">(${this.options.info.scientific_name})</span>
-			</h4></a>
+			</h4>
 			<p class="birdImage"><img src="${this.options.wiki.image}" /></p>
-			<p class="birdSummary">${this.options.wiki.summary}</p>
-			<p class="popData">${speciesData.total} seen all day; ${speciesData.shown} currently on map</p>`;
+			<ul>
+			<li><i class="fas fa-map-marker-alt"></i> ${land_types[this.options.habitat]}</li>
+			<li><i class="fas fa-crow"></i> 1 of ${speciesData.total} seen today</li>
+			<li class="openInfo" value=${this.options.species}><i class="fas fa-info"></i>View species information in sidebar</li>
+			</ul>
+			`;
+			// <a href="${this.options.wiki.url}">
 
 		this.bindPopup(content, {
 			className: "birdPopup",

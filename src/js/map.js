@@ -1,10 +1,12 @@
 var L = require("leaflet");
 import pixelColors from './data/colorlist.js';
+import land_types from './data/land_types.js';
 
-function LandMap(map, useData) {
+function LandMap(map, useData, layer) {
 	let size = useData.scaling;
 	let prev = map.latLngToContainerPoint(useData.origin);
 	let tiles = [];
+	// console.log(land_types);
 
 	for (let i = 0; i < useData.pixel_cover_list.length; i++) {
 		let start = L.point((Math.floor(i / useData.pixel_dim.rows) * size) + prev.x,
@@ -18,9 +20,9 @@ function LandMap(map, useData) {
 			stroke: false, 
 			fill: true, 
 			fillOpacity: 0.2}
-		);
+		).bindTooltip(land_types[useData.pixel_cover_list[i]]).openTooltip();
 
-		// tiles[i].bindTooltip(i.toString()).openTooltip();
+		tiles[i].addTo(layer);
 	}
 
 	this.getTiles = function() {

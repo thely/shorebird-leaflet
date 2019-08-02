@@ -3,8 +3,8 @@ var C = require('chance').Chance();
 var tablesort = require('tablesort');
 import "leaflet-sidebar-v2/js/leaflet-sidebar.min.js";
 import "tablesort/src/sorts/tablesort.number.js";
-import "./ui/island.js";
-import "./ui/date.js";
+import "./ui/volume.js";
+// import "./ui/date.js";
 
 import LandMap from "./map.js";
 import Population from "./population.js";
@@ -15,6 +15,7 @@ import hog_data  from './data/hog_data.js';
 import bird_data  from './data/all_bird_data.js';
 import wiki_data from "./data/bird_wiki_data.js";
 import pixelColors from './data/colorlist.js';
+import land_types from './data/land_types.js';
 
 import { B_POPSCALE } from "./settings.js";
 
@@ -29,60 +30,42 @@ let map = L.map('map', {
 	zoomControl: false,
 }).setView(useData.center, 14);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+let base = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
-
-// ----------------------------------------
-// Map/Base
-// ----------------------------------------
-
-let tiles = new LandMap(map, useData);
-// tiles.show();
+// Layers
+let habitatLayer = L.layerGroup();
 let birdMarkers = L.layerGroup().addTo(map);
+
+let baseMaps = {
+	"Abstract": base,
+};
+let overlays = {
+	"Birds": birdMarkers,
+	"Habitats": habitatLayer
+};
+
+// Controls
+let layers = L.control.layers(baseMaps, overlays).addTo(map);
+let zoom = L.control.zoom({position: "topleft"}).addTo(map);
+let volume = L.control.range().addTo(map);
+
+volume.on("input change click", function(e) {
+	console.log("master volume to "+e.value);
+	if (sfx) {
+		sfx.master(parseFloat(e.value));
+	}
+});
+
+// ----------------------------------------
+// Data
+// ----------------------------------------
+
+let tiles = new LandMap(map, useData, habitatLayer);
 let pop = new Population(map, birdMarkers);
 let sfx = new AudioManager();
 
-let zoom = L.control.zoom({position: "bottomright"}).addTo(map);
-
-// ----------------------------------------
-// UI
-// ----------------------------------------
-
-// Pick/change island
-let island_sel = new L.IslandSel({
-	islands: ["Cobb Island", "Hog Island"],
-	position: "topright",
-}).addTo(map);
-
-island_sel.on('change', function(e) {
-	useData = (e.island == "Cobb Island") ? cobb_data : hog_data;
-	map.flyTo(useData.center);
-	mark.setLatLng(useData.origin);
-});
-
-// Pick/change day
-let days = [];
-for (let i = 0; i < useData["birds_and_days"].length; i++) {
-	days.push(useData["birds_and_days"][i]["date"]);
-}
-
-let date_sel = new L.DateSel({
-	dates: days,
-	position: "topright"
-}).addTo(map);
-
-date_sel.on('change', function(e) {
-	if (sfx.audioLoaded) {
-		console.log("resetting audio nodes because it's loaded");
-		sfx.reset(pop.getBirds());
-	}
-	birdMarkers.clearLayers();
-	pop.generateBirds(useData, e.selDate, tiles);
-	sfx.setup(useData.birds_and_days[e.selDate].count, bird_data);
-	popTable(e.selDate);
-});
 
 // ----------------------------------------
 // UI - Sidebar
@@ -97,7 +80,19 @@ sidebar.addPanel({
 	id: "home",
 	tab: "<i class='fas fa-bars'></i>",
 	title: "Home",
-	pane: "<p>Would you like to know more about birds?</p>",
+	pane: 	`<p>Select and island and a date from the list to get started. Picking a date
+				will spatialize birds on the map that were present on that day, on that island.
+				For more information about how this works, see the about tab.</p>
+			 <h4>Island</h4>
+			 <div class="select-controls"><select class="island-select">
+				 <option value="0">Cobb Island</option>
+				 <option value="1">Hog Island</option>
+			 </select>
+			 <h4>Dates</h4>
+			 <select class="date-select">
+			 	${genDateOptions(useData)}
+			 </select>
+			 </div>`,
 }).open('home');
 
 sidebar.addPanel({
@@ -111,11 +106,69 @@ sidebar.addPanel({
 	id: "bird-data",
 	tab: "<i class='fas fa-feather'></i>",
 	title: "Species Data",
-	pane: "<div id='bird-data-replace'><p>Select a bird on the map to see more information.</p></div>",
+	pane: "<div id='bird-wiki'><p>Select a bird on the map to see more information.</p></div>",
 });
 
+sidebar.addPanel({
+	id: "land-pane",
+	tab: "<i class='fas fa-map'></i>",
+	title: "Land Types",
+	pane: `<p>A land use map breaks up a region into square regions. The most dominant habitat
+	 type defines the region. Below are the habitats present on Cobb and Hog islands.</p>
+	 <p>To see the land use map as an overlay, enable it via the layers control.</p>
+	 ${generateLandUseLegend()}`,
+});
+
+function generateLandUseLegend() {
+	let content = "<ul>";
+	for (let i = 0; i < land_types.length; i++) {
+		content += `<li><i class='fas fa-square-full' 
+			style='color: ${pixelColors[i]};'></i>
+			<span>${land_types[i]}</span></li>`;
+	}
+	content += "</ul>";
+	return content;
+}
+
 // ----------------------------------------
-// Helpers
+// Opening Pane
+// ----------------------------------------
+
+let island_sel = document.querySelector("select.island-select")
+	.addEventListener("change", e => changeIsland(e.srcElement.value));
+
+let date_sel = document.querySelector("select.date-select")
+	.addEventListener("change", e => changeDate(e.srcElement.value));
+
+function changeIsland(i) {
+	useData = (i == 0) ? cobb_data : hog_data;
+	let d = document.querySelector("select.date-select").innerHTML = genDateOptions(useData);
+	map.flyTo(useData.center);
+}
+
+function changeDate(date) {
+	console.log("changing the date!");
+	console.log(date);
+	if (sfx.audioLoaded) {
+		console.log("resetting audio nodes because it's loaded");
+		sfx.reset(pop.getBirds());
+	}
+	birdMarkers.clearLayers();
+	pop.generateBirds(useData, date, tiles);
+	sfx.setup(useData.birds_and_days[date].count, bird_data);
+	popTable(date);
+}
+
+function genDateOptions(useData) {
+	let content = "";
+	for (let i = 0; i < useData.birds_and_days.length; i++) {
+		content += `<option value='${i}'>${useData.birds_and_days[i].date}</option>`;
+	}
+	return content;
+}
+
+// ----------------------------------------
+// Population Table Pane
 // ----------------------------------------
 
 function popTable(day) {
@@ -147,15 +200,15 @@ function popTable(day) {
 	// if name is clicked in panel, show on map
 	for (let i = 0; i < today.count.length; i++) {
 		if (today.count[i] > 0) {
-	
-			// checkbox mute listeners
-			let elem = document.querySelector("input#species-mute-"+i);
+			let check = document.querySelector("input#species-mute-"+i);
 
-			"change click".split(" ")
-			    .map(name => elem.addEventListener(name, function(e) {
+			// checkbox mute listeners
+			"click".split(" ")
+			    .map(name => check.addEventListener(name, function(e) {
 			    	console.log(`species ${this.value}, muting? ${this.checked}`);
 					e.stopPropagation();
-					// sfx.muteSpecies(this.value, this.checked);
+					sfx.muteSpecies(this.value, this.checked, pop.getBirds());
+					sfx.update(pop.getVisibleBirds(), pop.getBirds());
 			    }, false));
 
 			// full row listener
@@ -174,18 +227,23 @@ function listenSpeciesRow() {
 	let b = parseInt(this.attributes["species-index"].value);
 	let s = pop.highlightSpecies(b);
 	map.setView(s.getLatLng());
-	document.getElementById("bird-data-replace").innerHTML = displayWikiSidebarPane(b);
+	document.getElementById("bird-wiki").innerHTML = displayWikiSidebarPane(b);
 	sidebar.open('bird-data');
 }
+
+// ----------------------------------------
+// Wiki Pane
+// ----------------------------------------
 
 function displayWikiSidebarPane(species) {
 	let content = 
 		`<a href="${wiki_data[species].url}">
-		<h4 class="birdName">${bird_data[species].common_name} 
+		<h3 class="birdName">${bird_data[species].common_name} 
 			<span class="science">(${bird_data[species].scientific_name})</span>
-		</h4></a>
+		</h3></a>
 		<p class="birdImage"><img src="${wiki_data[species].image}" /></p>
-		<blockquote class="birdSummary">${wiki_data[species].summary}</blockquote>`;
+		<blockquote class="birdSummary">${wiki_data[species].summary}</blockquote>
+		<h3>Appearances</h3>`;
 
 	// stats across all days and islands
 	content += speciesAllDaysTable("Cobb Island", cobb_data, species);
