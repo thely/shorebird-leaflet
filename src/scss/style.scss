@@ -63,15 +63,16 @@ html, body {
 // Sidebar
 // ----------------------------------------
 
-.leaflet-sidebar .fas,
-.leaflet-sidebar .fa {
+.leaflet-sidebar-tabs .fas,
+.leaflet-sidebar-tabs .fa,
+.leaflet-sidebar-close .fa {
 	line-height: 40px;
 }
 
 #bird-wiki {
 	h3:not(.birdName) {
-		margin-top: 3em;
-		margin-bottom: 1em;
+		margin-top: 2em;
+		margin-bottom: 0.5em;
 	}
 	.birdSummary {
 		border-left: 2px solid grey;
@@ -85,6 +86,12 @@ html, body {
 		img {
 			max-width: 100%;
 		}
+	}
+
+	.bird-all-days {
+		float: left;
+		margin-bottom: 2em;
+		margin-right: 2em;
 	}
 
 	.bird-all-days h4 {
@@ -152,12 +159,6 @@ table {
 
 // species population for all islands and days
 
-.bird-all-days {
-	float: left;
-	margin-bottom: 2em;
-	margin-right: 2em;
-}
-
 .species-active {
 	filter: drop-shadow(2px 3px 3px rgba(0,0,0,0.6));
 	height: 25px !important;
@@ -183,6 +184,16 @@ table {
 		height: 100px;
 		width: 100%;
 	}	
+}
+
+.solo-play-wrap {
+	float: left;
+	margin-right: 2em;
+
+	.solo-play {	
+		font-size: 40px;
+		
+	}
 }
 
 .clear {

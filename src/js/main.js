@@ -73,7 +73,8 @@ let sfx = new AudioManager();
 
 let sidebar = L.control.sidebar({
 	position: 'left',
-	container: 'sidebar'
+	container: 'sidebar',
+	autoPan: true
 }).addTo(map);
 
 sidebar.addPanel({
@@ -113,7 +114,8 @@ sidebar.addPanel({
 	id: "land-pane",
 	tab: "<i class='fas fa-map'></i>",
 	title: "Land Types",
-	pane: `<p>A land use map breaks up a region into square regions. The most dominant habitat
+	pane: `<p>A land use map breaks up a region into square segments of a given real-world size.
+	 The most dominant habitat
 	 type defines the region. Below are the habitats present on Cobb and Hog islands.</p>
 	 <p>To see the land use map as an overlay, enable it via the layers control.</p>
 	 ${generateLandUseLegend()}`,
@@ -218,6 +220,7 @@ function popTable(day) {
 	}
 }
 
+let soloState = 0;
 function listenSpeciesRow() {
 	let prev = document.getElementsByClassName("row-active");
 	while (prev.length) {
@@ -227,32 +230,55 @@ function listenSpeciesRow() {
 	let b = parseInt(this.attributes["species-index"].value);
 	let s = pop.highlightSpecies(b);
 	map.setView(s.getLatLng());
-	document.getElementById("bird-wiki").innerHTML = displayWikiSidebarPane(b);
-	sidebar.open('bird-data');
+	replaceWikiPane(b);
+	// sidebar.open('bird-data');
 }
 
 // ----------------------------------------
 // Wiki Pane
 // ----------------------------------------
 
-function displayWikiSidebarPane(species) {
+function replaceWikiPane(b) {
+	document.getElementById("bird-wiki").innerHTML = wikiSidebarContent(b);
+
+	document.querySelector(".solo-play").addEventListener("click", function(e) {
+		e.target.classList.toggle("fa-play-circle");
+		e.target.classList.toggle("fa-pause-circle");
+		soloState = (soloState == 0) ? 1 : 0;
+		let spec = e.target.attributes.species.value;
+		sfx.toggleSolo(soloState, spec);
+	});
+}
+
+function wikiSidebarContent(species) {
 	let content = 
-		`<a href="${wiki_data[species].url}">
+		`
 		<h3 class="birdName">${bird_data[species].common_name} 
 			<span class="science">(${bird_data[species].scientific_name})</span>
-		</h3></a>
+		</h3>
 		<p class="birdImage"><img src="${wiki_data[species].image}" /></p>
 		<blockquote class="birdSummary">${wiki_data[species].summary}</blockquote>
-		<h3>Appearances</h3>`;
+		<a href="${wiki_data[species].url}"><p>View full Wikipedia article</p></a>
+		`;
+
+	content += `<div class="clear"></div>
+		<h3>Listen</h3>
+		<div class="solo-play-wrap">
+			<i class="fas fa-play-circle solo-play" value="0" species="${species}"></i>
+		</div>
+		<p>Click play to hear only this species' call. The sonification on the map
+		will be muted until you pause.</p>`;
 
 	// stats across all days and islands
-	content += speciesAllDaysTable("Cobb Island", cobb_data, species);
-	content += speciesAllDaysTable("Hog Island", hog_data, species);
+	content += "<h3>Appearances</h3>";
+	content += speciesAppearancesTable("Cobb Island", cobb_data, species);
+	content += speciesAppearancesTable("Hog Island", hog_data, species);
 	
 	return content;
 }
 
-function speciesAllDaysTable(island, data, species) {
+// table of one species' population on all days, for one island
+function speciesAppearancesTable(island, data, species) {
 	let content = `<div class="bird-all-days">
 		<h4>${island}</h4><table><thead><tr>
 		<td>Date</td>
@@ -268,23 +294,34 @@ function speciesAllDaysTable(island, data, species) {
 	return content;
 }
 
-
 // ----------------------------------------
 // Listeners
 // ----------------------------------------
 
-// mark.on("click", function(e) {
-// 	console.log(e.latlng);
-// });
-
+// update the map when it pans
 map.on("move", function(e){
+	let sq = tiles.getSquareAtMapCenter();
+	// console.log(sq);
+
 	pop.update();
-	sfx.update(pop.getVisibleBirds(), pop.getBirds());
+	sfx.update(pop.getVisibleBirds(), pop.getBirds(), sq);
 	// console.log(pop.getVisibleBirds());
 });
 
+// update the latlng of the center when we resize
 map.on("resize", function(e){
 	pop.recenter();
 });
+
+// Click on "view more" link in popup to open the sidebar pane
+map.on("popupopen", function(e){
+	document.querySelector(".openInfo").addEventListener("click", function(q){
+		let b = e.popup.options.species;
+		replaceWikiPane(b);
+		sidebar.open('bird-data');
+		map.closePopup();
+	})
+});
+
 
 
