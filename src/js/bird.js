@@ -20,6 +20,12 @@ L.BirdMarker = L.Marker.extend({
 		species: 0,
 		habitat: 0
 	},
+	// onAdd: function(map) {
+	// 	L.DomEvent.on(this, 'click', function(e) {
+	// 		console.log("clicked on the popup");
+	// 		console.log(e);
+	// 	});
+	// },
 	audioPosition: function(position) {
 		// pos is the passed in latlng converted to px
 		let center = new Victor(this.options.center.x, this.options.center.y);
@@ -35,8 +41,7 @@ L.BirdMarker = L.Marker.extend({
 	},
 	displayWikiData: function(speciesData) {
 		let content = 
-			`
-			
+			`	
 			<h4 class="birdName">${this.options.info.common_name} 
 				<span class="science">(${this.options.info.scientific_name})</span>
 			</h4>
@@ -44,15 +49,11 @@ L.BirdMarker = L.Marker.extend({
 			<ul>
 			<li><i class="fas fa-map-marker-alt"></i> ${land_types[this.options.habitat]}</li>
 			<li><i class="fas fa-crow"></i> 1 of ${speciesData.total} seen today</li>
-			<li class="openInfo" value=${this.options.species}><i class="fas fa-info"></i>View species information in sidebar</li>
+			<li class="openInfo" value=${this.options.species}>
+				<i class="fas fa-info"></i>View species information in sidebar
+			</li>
 			</ul>
-			`;
-			// <a href="${this.options.wiki.url}">
-
-		this.bindPopup(content, {
-			className: "birdPopup",
-			maxHeight: 300
-		}).openPopup();
+			`
 
 		return content;
 	}
