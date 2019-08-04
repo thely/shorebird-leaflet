@@ -11,6 +11,13 @@
 
 function shorebirds_leaflet_view($atts) {
 	$content = file_get_contents("index.html");
+	$dir = plugin_dir_path(__DIR__);
+
+	echo "<pre>";
+	echo "My directory: " + $dir;
+	echo $content;
+	echo "</pre>";
+	return $content;
 }
 
-add_shorcode('shorebirds-leaflet', 'shorebirds_leaflet_view');
+add_shortcode('shorebirds-leaflet', 'shorebirds_leaflet_view');

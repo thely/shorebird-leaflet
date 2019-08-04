@@ -4,7 +4,6 @@ var tablesort = require('tablesort');
 import "leaflet-sidebar-v2/js/leaflet-sidebar.min.js";
 import "tablesort/src/sorts/tablesort.number.js";
 import "./ui/volume.js";
-// import "./ui/date.js";
 
 import LandMap from "./map.js";
 import Population from "./population.js";
@@ -305,7 +304,6 @@ map.on("move", function(e){
 
 	pop.update();
 	sfx.update(pop.getVisibleBirds(), pop.getBirds(), sq);
-	// console.log(pop.getVisibleBirds());
 });
 
 // update the latlng of the center when we resize

@@ -11,6 +11,7 @@ archive.on('error', function(err) {
 
 archive.pipe(output);
 
+// archive.append(null, { name: 'shorebirds-leaflet/' });
 archive.file('shorebirds-leaflet.php');
 archive.file('index.html');
 archive.file('assets/js/bundle.js');
