@@ -168,6 +168,7 @@ table {
 
 .volume-control {
 	background-color: white;
+	max-width: 30px;
 
 	.fas {
 		// color: grey;
@@ -183,6 +184,8 @@ table {
 		margin-bottom: 10px;
 		height: 100px;
 		width: 100%;
+
+		-webkit-appearance: slider-vertical;
 	}	
 }
 

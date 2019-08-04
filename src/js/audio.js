@@ -6,7 +6,7 @@ import { AudioContext } from 'standardized-audio-context';
 import { loadAudioBuffer } from 'audiobuffer-loader';
 import SampleManager from 'sample-manager';
 import AudioNode from './audionode.js';
-import { B_SOUNDFILE, B_MAXNODES } from "./settings.js";
+import { B_SOUNDFILE, B_SOUNDFOLDER, B_MAXNODES } from "./settings.js";
 import bird_data from "./data/all_bird_data.js";
 import ambience from './data/ambient_sound.js';
 
@@ -15,7 +15,7 @@ function AudioManager() {
 
 	let type = (L.Browser.gecko) ? "ogg" : "mp3";
 	console.log("our type is " + type);
-	this.mng = new SampleManager(this.ctx, 'assets/audio/', type);
+	this.mng = new SampleManager(this.ctx, B_SOUNDFOLDER, type);
 	this.max = B_MAXNODES;
 	console.log("max nodes: "+B_MAXNODES);
 
@@ -294,6 +294,9 @@ function __loadFiles() {
 		if (this.nodes.active.length == 0 && this.nodes.inactive.length == 0) {
 			this.makeNodes();
 		}
+	}).catch(e => {
+		console.log("audio problem!");
+		console.log(e);
 	});
 }
 
