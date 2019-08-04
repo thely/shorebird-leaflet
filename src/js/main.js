@@ -24,7 +24,7 @@ import { B_POPSCALE } from "./settings.js";
 L.Icon.Default.imagePath = 'node_modules/leaflet/dist/images/';
 
 let useData = cobb_data;
-let map = L.map('map', {
+let map = L.map('shorebirds-map', {
 	zoomSnap: 0.25,
 	zoomControl: false,
 }).setView(useData.center, 14);
@@ -77,7 +77,7 @@ let sidebar = L.control.sidebar({
 }).addTo(map);
 
 sidebar.addPanel({
-	id: "home",
+	id: "shorebirds-side-home",
 	tab: "<i class='fas fa-bars'></i>",
 	title: "Home",
 	pane: 	`<p>Select and island and a date from the list to get started. Picking a date
@@ -93,24 +93,24 @@ sidebar.addPanel({
 			 	${genDateOptions(useData)}
 			 </select>
 			 </div>`,
-}).open('home');
+}).open('shorebirds-side-home');
 
 sidebar.addPanel({
-	id: "pop-table",
+	id: "shorebirds-pop-table",
 	tab: "<i class='fas fa-chart-bar'></i>",
 	title: "Total Birds",
 	pane: "<p>Select a day to view population data.</p><table id='bird-table'></table>",
 });
 
 sidebar.addPanel({
-	id: "bird-data",
+	id: "shorebirds-bird-data",
 	tab: "<i class='fas fa-feather'></i>",
 	title: "Species Data",
 	pane: "<div id='bird-wiki'><p>Select a bird on the map to see more information.</p></div>",
 });
 
 sidebar.addPanel({
-	id: "land-pane",
+	id: "shorebirds-land-pane",
 	tab: "<i class='fas fa-map'></i>",
 	title: "Land Types",
 	pane: `<p>A land use map breaks up a region into square segments of a given real-world size.
@@ -316,7 +316,7 @@ map.on("popupopen", function(e){
 	document.querySelector(".openInfo").addEventListener("click", function(q){
 		let b = e.popup.options.species;
 		replaceWikiPane(b);
-		sidebar.open('bird-data');
+		sidebar.open('shorebirds-bird-data');
 		map.closePopup();
 	})
 });

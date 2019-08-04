@@ -83,7 +83,6 @@ function Population(map, layer) {
 				let icon = L.divIcon({
 					className: "bird-icon bird-icon-"+i,
 					html: makeMarkerIcon(color)
-					// html: "<i class='fas fa-crow'></i>",
 				});
 
 				for (let j = 0; j < pop; j++) { // single bird loop
@@ -96,7 +95,6 @@ function Population(map, layer) {
 
 	this.update = function(event) {
 		this.visibleBirds = [];
-		// let center = map.getSize().divideBy(2);
 		for (let i = 0; i < this.birds.length; i++) {
 			this.birds[i].options.visible.then = this.birds[i].options.visible.now;
 			if (map.getBounds().contains(this.birds[i].getLatLng())) {
@@ -125,18 +123,14 @@ function Population(map, layer) {
 			habitat: t.habitat
 		}).bindTooltip(bird_data[species].common_name).openTooltip()
 		.on("click", function(e) {
-			// bird.displayBirdData(popData(species));
 			let formatted = bird.displayWikiData(popData(species));
 			let popup = L.eventPopup({
 				className: "birdPopup",
 				maxHeight: 300,
 				species: species
 			}).setContent(formatted);
-			// console.log(popup);
 
 			bird.unbindPopup().bindPopup(popup).openPopup();
-			// console.log(popup);
-			// document.getElementById("bird-data-replace").innerHTML = formatted;
 		}).addTo(layer);
 
 		return bird;
@@ -193,13 +187,10 @@ function Population(map, layer) {
 		c13.366-19.672,18.459-45.152,15.569-77.895c-0.178-2.009,2.17-5.031,4.888-8.532c3.783-4.871,8.472-10.908,10.544-18.781
 		c2.347-0.872,6.162-1.731,10.187-2.637c3.687-0.83,7.498-1.688,11.026-2.716c0.431-0.125,0.733-0.447,0.81-0.861
 		C356.255,105.873,355.736,105.479,354.793,104.763z" fill="${color}" /></svg>`; 
-		// var iconUrl = encodeURI("data:image/svg+xml," + svg).replace('#','%23');
 
 		return svg;
 	}
 }
-
-// TODO: needs a resize update method to update all the birds' centers
 
 export default Population;
 

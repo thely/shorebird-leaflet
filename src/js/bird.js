@@ -20,12 +20,6 @@ L.BirdMarker = L.Marker.extend({
 		species: 0,
 		habitat: 0
 	},
-	// onAdd: function(map) {
-	// 	L.DomEvent.on(this, 'click', function(e) {
-	// 		console.log("clicked on the popup");
-	// 		console.log(e);
-	// 	});
-	// },
 	audioPosition: function(position) {
 		// pos is the passed in latlng converted to px
 		let center = new Victor(this.options.center.x, this.options.center.y);
