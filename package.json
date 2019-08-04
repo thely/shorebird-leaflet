@@ -5,13 +5,17 @@
   "main": "bundle.js",
   "scripts": {
     "build": "browserify src/js/main.js > assets/js/bundle.js -t [ babelify --presets [@babel/preset-env] ] -g [ uglifyify -c ]",
-    "scss-build": "node-sass src/scss/style.scss assets/css/style.css --output-style compressed",
     "move": "cp assets/js/bundle.js ../components/wp-content/plugins/shorebirds-leaflet/assets/js/bundle.js ",
-    "move-scss": "cp assets/css/style.css ../components/wp-content/plugins/shorebirds-leaflet/assets/css/style.css",
-    "plugin": "npm-run-all -s build move scss-build move-scss",
+    "js-plugin": "npm-run-all -s build move",
+
+    "scss-build": "node-sass src/scss/style.scss assets/css/style.css --output-style compressed",
+    "scss-move": "cp assets/css/style.css ../components/wp-content/plugins/shorebirds-leaflet/assets/css/style.css",
+    "scss-plugin": "npm-run-all -s scss-build scss-move",
+
+    "plugin": "npm-run-all -p js-plugin scss-plugin",
 
     "js-watch": "watchify src/js/main.js -o assets/js/dev.js --debug --verbose -t [ babelify --presets [@babel/preset-env] ]",
-    "scss-watch": "node-sass --watch src/scss/style.scss assets/css/style.css",
+    "scss-watch": "node-sass --watch src/scss/style.scss assets/css/style.css --output-style compressed",
 
     "start": "serve",
     "dev": "npm-run-all --parallel start scss-watch js-watch",
