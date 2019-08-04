@@ -1,47 +1,48 @@
-.leaflet-sidebar-tabs .fas,
-.leaflet-sidebar-tabs .fa,
-.leaflet-sidebar-close .fa {
-	line-height: 40px;
-}
+#shorebirds-container {
 
-
-table {
-	border-collapse: collapse;
-	font-size: inherit;
-
-	&, td, th {
-		border: 1px solid grey;	
+	#sidebar.leaflet-sidebar {
+		box-sizing: content-box;
 	}
 
-	td, th {
+	h1.leaflet-sidebar-header::before {
+		display: none;
+		content: "";
+	}
+
+	.leaflet-sidebar-tabs .fas,
+	.leaflet-sidebar-tabs .fa,
+	.leaflet-sidebar-close .fa {
+		line-height: 40px;
+	}
+
+	table {
+		border-collapse: collapse;
 		font-size: inherit;
-		padding: 3px 4px;
-		text-align: left;
-	}
-	th {
-		font-size: 12px;
+		margin: 0;
+
+		&, td, th {
+			border: 1px solid grey;	
+		}
+
+		td, th {
+			font-size: inherit;
+			padding: 3px 4px;
+			text-align: left;
+		}
+		th {
+			font-size: 12px;
+		}
+
 	}
 
-}
-
-#land-pane {
-	ul {
-		list-style-type: none;
-		margin-top: 1em;
-		padding-left: 0;
-	}
-	li {
-		margin-bottom: 0.8em;
-
-		span {
-			display: inline-block;
-			margin-top: -23px;
+	#shorebirds-side-home {
+		h4 {
+			float: left;
+			margin: 0;
+			margin-bottom: 1.4em;
+			width: 4em;
 		}
 	}
-	.fas {
-		border: 1px solid #bdbdbd;
-		font-size: 25px;
-		line-height: 25px;
-		margin-right: 10px;
-	}
+
 }
+

@@ -1,0 +1,22 @@
+#shorebirds-land-pane {
+	ul {
+		list-style-type: none;
+		margin-top: 1em;
+		padding-left: 0;
+	}
+	li {
+		list-style-type: none;
+		margin-bottom: 0.8em;
+
+		span {
+			display: inline-block;
+			margin-top: -23px;
+		}
+	}
+	.fas {
+		border: 1px solid #bdbdbd;
+		font-size: 25px;
+		line-height: 25px;
+		margin-right: 10px;
+	}
+}	

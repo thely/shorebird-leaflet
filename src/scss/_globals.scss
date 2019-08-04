@@ -1,4 +1,5 @@
 #shorebirds-container {
+	background-color: transparent;
 	font-family: Helvetica, sans-serif !important;
 	font-size: 12px;
 	margin: 0;
@@ -6,7 +7,9 @@
 	max-width: 100%;
 	width: 100%;
 
-	h1, h2, h3, h4, h5, h6 {
+	h1, h2, h3, h4, h5, h6,
+	select, option, blockquote, p,
+	div, section, header, footer {
 		font-family: Helvetica, sans-serif !important;
 	}
 
@@ -19,9 +22,15 @@
 	}
 }
 
-#shorebirds-container #map {
+#shorebirds-container #shorebirds-map {
 	height: 600px;
 	width: 100%;
+
+	// things that WP will sometimes override
+	.leaflet-bar a, .leaflet-bar a:hover,
+	.leaflet-popup-close-button {
+		text-decoration: none;
+	}
 }
 
 // Bird icon sizes/styles
@@ -54,8 +63,10 @@
 	}
 
 	input[type=range] {
+		border: 0;
 		margin: 0 auto;
 		margin-bottom: 10px;
+		padding: 0;
 		height: 100px;
 		width: 100%;
 
