@@ -1,0 +1,69 @@
+#shorebirds-container {
+	font-family: Helvetica, sans-serif !important;
+	font-size: 12px;
+	margin: 0;
+	padding: 0;
+	max-width: 100%;
+	width: 100%;
+
+	h1, h2, h3, h4, h5, h6 {
+		font-family: Helvetica, sans-serif !important;
+	}
+
+	h4 {
+		font-size: 14px;
+	}
+
+	p {
+		margin: 15px 0;
+	}
+}
+
+#shorebirds-container #map {
+	height: 600px;
+	width: 100%;
+}
+
+// Bird icon sizes/styles
+.bird-icon {
+	height: 18px;
+	width: 18px;
+}
+
+.species-active {
+	filter: drop-shadow(2px 3px 3px rgba(0,0,0,0.6));
+	height: 25px !important;
+	width: 25px !important;
+	z-index: 999 !important;
+}
+
+//volume slider and mute
+.volume-control {
+	background-color: white;
+	max-width: 30px;
+	width: 30px;
+
+	.fas {
+		// color: grey;
+		display: block;
+		height: 30px;
+		line-height: 30px;
+		margin-left: -1px;
+		text-align: center;
+		width: 30px;
+	}
+
+	input[type=range] {
+		margin: 0 auto;
+		margin-bottom: 10px;
+		height: 100px;
+		width: 100%;
+
+		-webkit-appearance: slider-vertical;
+	}	
+}
+
+.clear {
+	clear: both;
+	display: table;
+}

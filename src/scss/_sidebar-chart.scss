@@ -1,0 +1,15 @@
+// species table in the per-day chart
+#bird-table {
+	.bird-shade {
+		border: 0px solid transparent;
+	}
+
+	tbody tr:hover {
+		background-color: aliceblue;
+		cursor: pointer;
+	}
+
+	tbody tr.row-active {
+		background-color: grey;
+	}
+}

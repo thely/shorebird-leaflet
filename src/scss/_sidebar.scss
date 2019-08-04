@@ -1,0 +1,47 @@
+.leaflet-sidebar-tabs .fas,
+.leaflet-sidebar-tabs .fa,
+.leaflet-sidebar-close .fa {
+	line-height: 40px;
+}
+
+
+table {
+	border-collapse: collapse;
+	font-size: inherit;
+
+	&, td, th {
+		border: 1px solid grey;	
+	}
+
+	td, th {
+		font-size: inherit;
+		padding: 3px 4px;
+		text-align: left;
+	}
+	th {
+		font-size: 12px;
+	}
+
+}
+
+#land-pane {
+	ul {
+		list-style-type: none;
+		margin-top: 1em;
+		padding-left: 0;
+	}
+	li {
+		margin-bottom: 0.8em;
+
+		span {
+			display: inline-block;
+			margin-top: -23px;
+		}
+	}
+	.fas {
+		border: 1px solid #bdbdbd;
+		font-size: 25px;
+		line-height: 25px;
+		margin-right: 10px;
+	}
+}

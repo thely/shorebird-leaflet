@@ -1,0 +1,40 @@
+#bird-wiki {
+	h3:not(.birdName) {
+		margin-top: 2em;
+		margin-bottom: 0.5em;
+	}
+	.birdSummary {
+		border-left: 2px solid grey;
+		margin-left: 0.25em;
+		margin-right: 0;
+		padding-left: 1.75em;
+	}
+	.birdImage {
+		max-width: 100%;
+
+		img {
+			max-width: 100%;
+		}
+	}
+
+	.bird-all-days {
+		float: left;
+		margin-bottom: 2em;
+		margin-right: 2em;
+	}
+
+	.bird-all-days h4 {
+		margin-bottom: 0.6em;
+		margin-top: 0.6em;
+	}
+}
+
+.solo-play-wrap {
+	float: left;
+	margin-right: 2em;
+
+	.solo-play {	
+		font-size: 40px;
+		
+	}
+}
