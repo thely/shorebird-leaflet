@@ -73,7 +73,7 @@ let sfx = new AudioManager();
 let sidebar = L.control.sidebar({
 	position: 'left',
 	container: 'sidebar',
-	autoPan: true
+	autopan: true
 }).addTo(map);
 
 sidebar.addPanel({
@@ -83,11 +83,13 @@ sidebar.addPanel({
 	pane: 	`<p>Select and island and a date from the list to get started. Picking a date
 				will spatialize birds on the map that were present on that day, on that island.
 				For more information about how this works, see the about tab.</p>
+			 <div class="select-controls">
 			 <h4>Island</h4>
-			 <div class="select-controls"><select class="island-select">
+			 <select class="island-select">
 				 <option value="0">Cobb Island</option>
 				 <option value="1">Hog Island</option>
 			 </select>
+			 <div class="clear"></div>
 			 <h4>Dates</h4>
 			 <select class="date-select">
 			 	${genDateOptions(useData)}
