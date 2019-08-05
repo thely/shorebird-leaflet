@@ -21,7 +21,7 @@ import { faBars, faChartBar, faFeather, faMap, faPlayCircle, faPauseCircle, faCa
 
 library.add(faBars, faChartBar, faFeather, faMap, faPlayCircle, faPauseCircle, faSquareFull, faCaretLeft);
 
-import { B_POPSCALE, B_STARTZOOM } from "./settings.js";
+import { B_POPSCALE, B_STARTZOOM, B_CSS } from "./settings.js";
 
 // ----------------------------------------
 // Shadow DOM??
@@ -31,10 +31,7 @@ let shadow = container.attachShadow({mode: 'open'});
 
 let mapdiv = document.createElement('div');
 mapdiv.setAttribute("id", "shorebirds-map");
-let innards = `<link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css">
-<link rel="stylesheet" href="node_modules/leaflet-sidebar-v2/css/leaflet-sidebar.css">
-<link rel="stylesheet" href="node_modules/tablesort/tablesort.css">
-<link rel="stylesheet" href="assets/css/style.css" />`;
+let innards = B_CSS;
 
 mapdiv.innerHTML = innards;
 shadow.appendChild(mapdiv);
@@ -187,6 +184,9 @@ function changeIsland(i) {
 function changeDate(date) {
 	console.log("changing the date!");
 	console.log(date);
+	if (date == -1) {
+		return;
+	}
 	if (sfx.audioLoaded) {
 		console.log("resetting audio nodes because it's loaded");
 		sfx.reset(pop.getBirds());
@@ -198,7 +198,7 @@ function changeDate(date) {
 }
 
 function genDateOptions(useData) {
-	let content = "";
+	let content = "<option value='-1'>--Pick a date--</option>";
 	for (let i = 0; i < useData.birds_and_days.length; i++) {
 		content += `<option value='${i}'>${useData.birds_and_days[i].date}</option>`;
 	}
@@ -309,7 +309,8 @@ function wikiSidebarContent(species) {
 			}).html}
 		</div>
 		<p>Click play to hear only this species' call. The sonification on the map
-		will be muted until you pause.</p>`;
+		will be muted until you pause.</p>
+		<div class="clear"></div>`;
 
 	// stats across all days and islands
 	content += "<h3>Appearances</h3>";
