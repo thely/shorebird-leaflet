@@ -28,13 +28,13 @@ function Population(map, layer) {
 		return this.visibleBirds;
 	}
 
-	this.highlightSpecies = function(species) {
-		let prev = document.getElementsByClassName("species-active");
-		while(prev.length) {
-			prev[0].classList.toggle("species-active");
+	this.highlightSpecies = function(shadow, species) {
+		let prev = shadow.querySelectorAll(".species-active");
+		for (let item of prev) {
+			item.classList.toggle("species-active");
 		};
 
-		let next = document.getElementsByClassName("bird-icon-"+species);
+		let next = shadow.querySelectorAll(".bird-icon-"+species);
 		for (let item of next) {
 			item.classList.add("species-active");
 		};

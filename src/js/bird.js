@@ -45,10 +45,10 @@ L.BirdMarker = L.Marker.extend({
 			</h4>
 			<p class="birdImage"><img src="${this.options.wiki.image}" /></p>
 			<ul>
-			<li>${icon(faMapMarkerAlt).html} ${land_types[this.options.habitat]}</li>
-			<li>${icon(faCrow).html} 1 of ${speciesData.total} seen today</li>
+			<li><span class="popIconWrap">${icon(faMapMarkerAlt).html}</span>${land_types[this.options.habitat]}</li>
+			<li><span class="popIconWrap">${icon(faCrow).html}</span>1 of ${speciesData.total} seen today</li>
 			<li class="openInfo" value=${this.options.species}>
-				${icon(faInfo).html} View species information in sidebar
+				<span class="popIconWrap">${icon(faInfo).html}</span>View species information in sidebar
 			</li>
 			</ul>
 			`
