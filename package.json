@@ -7,19 +7,14 @@
     "build": "browserify src/js/main.js > assets/js/bundle.js -t [ babelify --presets [@babel/preset-env] ] -g [ uglifyify -c ]",
     "move": "cp assets/js/bundle.js ../components/wp-content/plugins/shorebirds-leaflet/assets/js/bundle.js ",
     "js-plugin": "npm-run-all -s build move",
-
     "scss-build": "node-sass src/scss/style.scss assets/css/style.css --output-style compressed",
     "scss-move": "cp assets/css/style.css ../components/wp-content/plugins/shorebirds-leaflet/assets/css/style.css",
     "scss-plugin": "npm-run-all -s scss-build scss-move",
-
     "plugin": "npm-run-all -p js-plugin scss-plugin",
-
-    "js-watch": "watchify src/js/main.js -o assets/js/dev.js --debug --verbose -t [ babelify --presets [@babel/preset-env] ]",
+    "js-watch": "watchify src/js/main.js -o assets/js/bundle.js --debug --verbose -t [ babelify --presets [@babel/preset-env] ]",
     "scss-watch": "node-sass --watch src/scss/style.scss assets/css/style.css --output-style compressed",
-
     "start": "serve",
-    "dev": "npm-run-all --parallel start scss-watch js-watch",
-    "ugly": "browserify -g uglifyify ./assets/js/dev.js > ./assets/js/bundle.js"
+    "dev": "npm-run-all --parallel start scss-watch js-watch"
   },
   "author": "",
   "license": "ISC",
@@ -37,6 +32,9 @@
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
+    "@fortawesome/fontawesome-free": "^5.10.1",
+    "@fortawesome/fontawesome-svg-core": "^1.2.21",
+    "@fortawesome/free-solid-svg-icons": "^5.10.1",
     "archiver": "^3.0.3",
     "babelify": "^10.0.0",
     "node-sass": "^4.12.0",

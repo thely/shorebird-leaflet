@@ -1,4 +1,8 @@
 var L = require("leaflet");
+import { library, icon } from '@fortawesome/fontawesome-svg-core';
+import { faVolumeUp, faVolumeDown } from '@fortawesome/free-solid-svg-icons';
+
+library.add(faVolumeUp, faVolumeDown);
 
 L.Control.Range = L.Control.extend({
     options: {
@@ -15,8 +19,9 @@ L.Control.Range = L.Control.extend({
     onAdd: function(map) {
         var container = L.DomUtil.create('div', 'volume-control leaflet-range-control leaflet-bar ' + this.options.orient);
         
-        let volUp = L.DomUtil.create('i', "fas fa-volume-up", container);
+        let volUp = L.DomUtil.create('div', "volume-mute", container);
         volUp.setAttribute('value', 1);
+        volUp.innerHTML = icon(faVolumeUp).html;
         
         var slider = L.DomUtil.create('input', 'volume', container);
         slider.type = 'range';
@@ -56,8 +61,9 @@ L.Control.Range = L.Control.extend({
         	let next = (volUp.getAttribute("value") == 1) ? 0 : 1;
         	volUp.setAttribute("value", next);
 
-        	let cl = (next) ? "fas fa-volume-up" : "fas fa-volume-mute";
-        	L.DomUtil.setClass(volUp, cl);
+        	let svg = (next) ? icon(faVolumeUp).html : icon(faVolumeDown).html;
+        	// L.DomUtil.setClass(volUp, cl);
+            volUp.innerHTML = svg;
         	next = (next) ? slider.value : 0;
         	this.fire('click', {value: next});
         }.bind(this));

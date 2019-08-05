@@ -1,8 +1,12 @@
 var L = require("leaflet");
 var C = require("chance").Chance();
 var Victor = require("victor");
-
 import land_types from './data/land_types.js';
+
+import { library, icon } from '@fortawesome/fontawesome-svg-core';
+import { faMapMarkerAlt, faCrow, faInfo } from '@fortawesome/free-solid-svg-icons';
+
+library.add(faMapMarkerAlt, faCrow, faInfo);
 
 L.BirdMarker = L.Marker.extend({
 	options: {
@@ -41,10 +45,10 @@ L.BirdMarker = L.Marker.extend({
 			</h4>
 			<p class="birdImage"><img src="${this.options.wiki.image}" /></p>
 			<ul>
-			<li><i class="fas fa-map-marker-alt"></i> ${land_types[this.options.habitat]}</li>
-			<li><i class="fas fa-crow"></i> 1 of ${speciesData.total} seen today</li>
+			<li>${icon(faMapMarkerAlt).html} ${land_types[this.options.habitat]}</li>
+			<li>${icon(faCrow).html} 1 of ${speciesData.total} seen today</li>
 			<li class="openInfo" value=${this.options.species}>
-				<i class="fas fa-info"></i>View species information in sidebar
+				${icon(faInfo).html} View species information in sidebar
 			</li>
 			</ul>
 			`
