@@ -21,10 +21,18 @@
 		}
 	}
 
-	.fas {
+	.popIconWrap {
+		display: inline-block;
+		margin-right: 10px;
 		text-align: center;
-		margin-right: 5px;
-		width: 20px;
+		width: 16px;
+		
+		svg.fa-info {
+			width: 5.5px;
+		}
+		svg.fa-map-marker-alt {
+			width: 10px;
+		}
 	}
 
 	ul {
@@ -35,5 +43,10 @@
 		li {
 			margin-bottom: 0.5em;
 		}
+	}
+
+	.openInfo:hover {
+		background-color: aliceblue;
+		cursor: pointer;
 	}
 }

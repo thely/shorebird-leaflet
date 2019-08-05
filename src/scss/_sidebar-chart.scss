@@ -1,5 +1,5 @@
 // species table in the per-day chart
-#shorebirds-bird-data #bird-table {
+#shorebirds-pop-table #bird-table {
 	.bird-shade {
 		border: 0px solid transparent;
 	}
@@ -10,6 +10,6 @@
 	}
 
 	tbody tr.row-active {
-		background-color: grey;
+		background-color: #c2dbf0;
 	}
 }
