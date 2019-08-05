@@ -22,16 +22,28 @@ function AudioManager() {
 	// various buses
 	this.birdBus = this.ctx.createGain();
 	this.birdBus.gain.value = 1;
+
+	this.ambiBus = this.ctx.createGain();
+	this.ambiBus.gain.value = 0.5;
+	
 	this.masterGain = this.ctx.createGain();
 	this.masterGain.gain.value = 0.5;
 
+	// connecting buses
 	this.birdBus.connect(this.masterGain);
+	this.ambiBus.connect(this.masterGain);
 	this.masterGain.connect(this.ctx.destination);
 
 	this.nodes = {
 		active: [],
 		inactive: []
 	};
+
+	this.ambiNodes = {
+		source: [],
+		gains: []
+	};
+
 	this.flags = {
 		soundsLoaded: false,
 		sceneChanged: false
@@ -40,14 +52,9 @@ function AudioManager() {
 	this.hrtf = __getHRTF.call(this);
 	__loadFiles.call(this);
 
-	this.ambiNodes = {
-		source: [],
-		gains: []
-	};
-
 	this.lastAmbi = -1;
-	this.audioLoaded = false;
 
+	this.audioLoaded = false;
 	this.muteList = [];
 	this.isMuted = false;
 
@@ -202,6 +209,7 @@ AudioManager.prototype.toggleSolo = function(play, species) {
 		this.soloNode.loop = true;
 
 		this.birdBus.gain.value = 0;
+		this.ambiBus.gain.value = 0;
 		this.soloNode.connect(this.masterGain);
 		this.soloNode.start(0, bird_data[species].start);
 	}
@@ -209,6 +217,7 @@ AudioManager.prototype.toggleSolo = function(play, species) {
 		console.log("muting the solo node");
 		this.soloNode.stop();
 		this.birdBus.gain.value = 1;
+		this.ambiBus.gain.value = 0.5;
 	}
 }
 
@@ -245,7 +254,7 @@ AudioManager.prototype.ambienceInit = function() {
 		console.log(this.ambiNodes.gains[i]);
 		
 		this.ambiNodes.source[i].connect(this.ambiNodes.gains[i]);
-		this.ambiNodes.gains[i].connect(this.birdBus);
+		this.ambiNodes.gains[i].connect(this.ambiBus);
 		this.ambiNodes.source[i].start(0, fileStartPos);
 	}
 }

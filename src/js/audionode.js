@@ -43,6 +43,7 @@ AudioNode.prototype.play = function(loopInfo) {
 	this.SoundSource.loop = true;
 	this.SoundSource.loopStart = loopInfo.start;
 	this.SoundSource.loopEnd = loopInfo.end;
+	this.SoundSource.playbackRate.value = C.floating({min: 0.85, max: 1.15});
 
 	var fileStartWhen = C.floating({min: 0, max: 2});
 	var fileStartPos = C.floating({min: loopInfo.start, max: loopInfo.end});
