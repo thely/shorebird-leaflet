@@ -21,7 +21,7 @@ import { faBars, faChartBar, faFeather, faMap, faPlayCircle, faPauseCircle, faCa
 
 library.add(faBars, faChartBar, faFeather, faMap, faPlayCircle, faPauseCircle, faSquareFull, faCaretLeft);
 
-import { B_POPSCALE } from "./settings.js";
+import { B_POPSCALE, B_STARTZOOM } from "./settings.js";
 
 // ----------------------------------------
 // Shadow DOM??
@@ -31,18 +31,13 @@ let shadow = container.attachShadow({mode: 'open'});
 
 let mapdiv = document.createElement('div');
 mapdiv.setAttribute("id", "shorebirds-map");
-// let innards = fs.readFileSync('map.html', 'utf8');
 let innards = `<link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css">
 <link rel="stylesheet" href="node_modules/leaflet-sidebar-v2/css/leaflet-sidebar.css">
 <link rel="stylesheet" href="node_modules/tablesort/tablesort.css">
 <link rel="stylesheet" href="assets/css/style.css" />`;
 
 mapdiv.innerHTML = innards;
-mapdiv.style.height = "500px";
-
-// add html to mapdiv before shoving it in the root
 shadow.appendChild(mapdiv);
-// shadow.innerHTML = "<div id='shorebirds-map'></div>";
 
 // ----------------------------------------
 // Map setup
@@ -53,7 +48,12 @@ let useData = cobb_data;
 let map = L.map(mapdiv, {
 	zoomSnap: 0.25,
 	zoomControl: false,
-}).setView(useData.center, 14);
+}).on("load", function() {
+	console.log("map loaded!");
+	setTimeout(function(){
+		map.invalidateSize();
+	}, 1000);
+}).setView(useData.center, B_STARTZOOM);
 
 let base = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -106,7 +106,7 @@ sidebar.addPanel({
 	id: "shorebirds-side-home",
 	tab: icon(faBars).html,
 	title: "Home",
-	pane: 	`<p>Select and island and a date from the list to get started. Picking a date
+	pane: 	`<p>Select an island and a date from the list to get started. Picking a date
 				will spatialize birds on the map that were present on that day, on that island.
 				For more information about how this works, see the about tab.</p>
 			 <div class="select-controls">
@@ -177,6 +177,9 @@ let date_sel = shadow.querySelector("select.date-select")
 
 function changeIsland(i) {
 	useData = (i == 0) ? cobb_data : hog_data;
+	birdMarkers.clearLayers();
+	habitatLayer.clearLayers();
+	tiles = new LandMap(map, useData, habitatLayer);
 	let d = shadow.querySelector("select.date-select").innerHTML = genDateOptions(useData);
 	map.flyTo(useData.center);
 }
@@ -255,13 +258,14 @@ function popTable(day) {
 
 let soloState = 0;
 function listenSpeciesRow() {
+	console.log("clicked on a row");
 	let prev = shadow.querySelector(".row-active");
 	while (prev != null && prev.length) {
 		prev[0].classList.remove("row-active");
 	};
 	this.classList.add("row-active");
 	let b = parseInt(this.attributes["species-index"].value);
-	let s = pop.highlightSpecies(b);
+	let s = pop.highlightSpecies(shadow, b);
 	map.setView(s.getLatLng());
 	replaceWikiPane(b);
 }
@@ -274,11 +278,14 @@ function replaceWikiPane(b) {
 	shadow.getElementById("bird-wiki").innerHTML = wikiSidebarContent(b);
 
 	shadow.querySelector(".solo-play").addEventListener("click", function(e) {
-		e.target.classList.toggle("fa-play-circle");
-		e.target.classList.toggle("fa-pause-circle");
 		soloState = (soloState == 0) ? 1 : 0;
+		let ico = (soloState == 0) ? faPlayCircle : faPauseCircle;
 		let spec = e.target.attributes.species.value;
 		sfx.toggleSolo(soloState, spec);
+		e.target.innerHTML = icon(ico, {
+			classes: ['solo-play'],
+			attributes: { 'value': 0, 'species': spec }
+		}).html;
 	});
 }
 
@@ -345,6 +352,7 @@ map.on("move", function(e){
 // update the latlng of the center when we resize
 map.on("resize", function(e){
 	pop.recenter();
+	// map.invalidateSize();
 });
 
 // Click on "view more" link in popup to open the sidebar pane

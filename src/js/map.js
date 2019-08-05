@@ -1,8 +1,11 @@
 var L = require("leaflet");
 import pixelColors from './data/colorlist.js';
 import land_types from './data/land_types.js';
+import { B_STARTZOOM } from './settings.js';
 
 function LandMap(map, useData, layer) {
+	let oldZoom = map.getZoom();
+	map.setZoom(B_STARTZOOM, { animate: false });
 	let size = useData.scaling;
 	let prev = map.latLngToContainerPoint(useData.origin);
 	let tiles = [];
@@ -24,6 +27,9 @@ function LandMap(map, useData, layer) {
 
 		tiles[i].addTo(layer);
 	}
+
+	map.setZoom(oldZoom, { animate: false });
+	console.log("zoom after: " + map.getZoom());
 
 	this.getTiles = function() {
 		return tiles;
@@ -66,12 +72,6 @@ function LandMap(map, useData, layer) {
 			useData.pixel_cover_list[i + col + 1]
 		];
 		return sq;
-	}
-
-	this.show = function() {
-		for (let i = 0; i < tiles.length; i++) {
-			tiles[i].addTo(map);
-		}
 	}
 }
 
