@@ -16,7 +16,33 @@ import wiki_data from "./data/bird_wiki_data.js";
 import pixelColors from './data/colorlist.js';
 import land_types from './data/land_types.js';
 
+import { library, icon } from '@fortawesome/fontawesome-svg-core';
+import { faBars, faChartBar, faFeather, faMap, faPlayCircle, faPauseCircle, faCaretLeft, faSquareFull } from '@fortawesome/free-solid-svg-icons';
+
+library.add(faBars, faChartBar, faFeather, faMap, faPlayCircle, faPauseCircle, faSquareFull, faCaretLeft);
+
 import { B_POPSCALE } from "./settings.js";
+
+// ----------------------------------------
+// Shadow DOM??
+// ----------------------------------------
+let container = document.querySelector("#shorebirds-container");
+let shadow = container.attachShadow({mode: 'open'});
+
+let mapdiv = document.createElement('div');
+mapdiv.setAttribute("id", "shorebirds-map");
+// let innards = fs.readFileSync('map.html', 'utf8');
+let innards = `<link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css">
+<link rel="stylesheet" href="node_modules/leaflet-sidebar-v2/css/leaflet-sidebar.css">
+<link rel="stylesheet" href="node_modules/tablesort/tablesort.css">
+<link rel="stylesheet" href="assets/css/style.css" />`;
+
+mapdiv.innerHTML = innards;
+mapdiv.style.height = "500px";
+
+// add html to mapdiv before shoving it in the root
+shadow.appendChild(mapdiv);
+// shadow.innerHTML = "<div id='shorebirds-map'></div>";
 
 // ----------------------------------------
 // Map setup
@@ -24,7 +50,7 @@ import { B_POPSCALE } from "./settings.js";
 L.Icon.Default.imagePath = 'node_modules/leaflet/dist/images/';
 
 let useData = cobb_data;
-let map = L.map('shorebirds-map', {
+let map = L.map(mapdiv, {
 	zoomSnap: 0.25,
 	zoomControl: false,
 }).setView(useData.center, 14);
@@ -78,7 +104,7 @@ let sidebar = L.control.sidebar({
 
 sidebar.addPanel({
 	id: "shorebirds-side-home",
-	tab: "<i class='fas fa-bars'></i>",
+	tab: icon(faBars).html,
 	title: "Home",
 	pane: 	`<p>Select and island and a date from the list to get started. Picking a date
 				will spatialize birds on the map that were present on that day, on that island.
@@ -99,21 +125,21 @@ sidebar.addPanel({
 
 sidebar.addPanel({
 	id: "shorebirds-pop-table",
-	tab: "<i class='fas fa-chart-bar'></i>",
+	tab: icon(faChartBar).html,
 	title: "Total Birds",
 	pane: "<p>Select a day to view population data.</p><table id='bird-table'></table>",
 });
 
 sidebar.addPanel({
 	id: "shorebirds-bird-data",
-	tab: "<i class='fas fa-feather'></i>",
+	tab: icon(faFeather).html,
 	title: "Species Data",
 	pane: "<div id='bird-wiki'><p>Select a bird on the map to see more information.</p></div>",
 });
 
 sidebar.addPanel({
 	id: "shorebirds-land-pane",
-	tab: "<i class='fas fa-map'></i>",
+	tab: icon(faMap).html,
 	title: "Land Types",
 	pane: `<p>A land use map breaks up a region into square segments of a given real-world size.
 	 The most dominant habitat
@@ -122,12 +148,18 @@ sidebar.addPanel({
 	 ${generateLandUseLegend()}`,
 });
 
+let closetabs = shadow.querySelectorAll('span.leaflet-sidebar-close');
+for (let i = 0; i < closetabs.length; i++) {
+	closetabs[i].innerHTML = icon(faCaretLeft).html;
+}
+
 function generateLandUseLegend() {
 	let content = "<ul>";
 	for (let i = 0; i < land_types.length; i++) {
-		content += `<li><i class='fas fa-square-full' 
-			style='color: ${pixelColors[i]};'></i>
-			<span>${land_types[i]}</span></li>`;
+		content += `<li>${icon(faSquareFull, { 
+			styles: { 'color': pixelColors[i] }
+		}).html}
+		<span>${land_types[i]}</span></li>`;
 	}
 	content += "</ul>";
 	return content;
@@ -137,15 +169,15 @@ function generateLandUseLegend() {
 // Opening Pane
 // ----------------------------------------
 
-let island_sel = document.querySelector("select.island-select")
+let island_sel = shadow.querySelector("select.island-select")
 	.addEventListener("change", e => changeIsland(e.srcElement.value));
 
-let date_sel = document.querySelector("select.date-select")
+let date_sel = shadow.querySelector("select.date-select")
 	.addEventListener("change", e => changeDate(e.srcElement.value));
 
 function changeIsland(i) {
 	useData = (i == 0) ? cobb_data : hog_data;
-	let d = document.querySelector("select.date-select").innerHTML = genDateOptions(useData);
+	let d = shadow.querySelector("select.date-select").innerHTML = genDateOptions(useData);
 	map.flyTo(useData.center);
 }
 
@@ -197,13 +229,13 @@ function popTable(day) {
 	}
 	content += "</tbody>";
 
-	document.getElementById("bird-table").innerHTML = content;
-	tablesort(document.getElementById("bird-table"));
+	shadow.getElementById("bird-table").innerHTML = content;
+	tablesort(shadow.getElementById("bird-table"));
 	
 	// if name is clicked in panel, show on map
 	for (let i = 0; i < today.count.length; i++) {
 		if (today.count[i] > 0) {
-			let check = document.querySelector("input#species-mute-"+i);
+			let check = shadow.querySelector("input#species-mute-"+i);
 
 			// checkbox mute listeners
 			"click".split(" ")
@@ -215,7 +247,7 @@ function popTable(day) {
 			    }, false));
 
 			// full row listener
-			document.getElementById("table-species-"+i)
+			shadow.getElementById("table-species-"+i)
 				.addEventListener('click', listenSpeciesRow);
 		}
 	}
@@ -223,8 +255,8 @@ function popTable(day) {
 
 let soloState = 0;
 function listenSpeciesRow() {
-	let prev = document.getElementsByClassName("row-active");
-	while (prev.length) {
+	let prev = shadow.querySelector(".row-active");
+	while (prev != null && prev.length) {
 		prev[0].classList.remove("row-active");
 	};
 	this.classList.add("row-active");
@@ -232,7 +264,6 @@ function listenSpeciesRow() {
 	let s = pop.highlightSpecies(b);
 	map.setView(s.getLatLng());
 	replaceWikiPane(b);
-	// sidebar.open('bird-data');
 }
 
 // ----------------------------------------
@@ -240,9 +271,9 @@ function listenSpeciesRow() {
 // ----------------------------------------
 
 function replaceWikiPane(b) {
-	document.getElementById("bird-wiki").innerHTML = wikiSidebarContent(b);
+	shadow.getElementById("bird-wiki").innerHTML = wikiSidebarContent(b);
 
-	document.querySelector(".solo-play").addEventListener("click", function(e) {
+	shadow.querySelector(".solo-play").addEventListener("click", function(e) {
 		e.target.classList.toggle("fa-play-circle");
 		e.target.classList.toggle("fa-pause-circle");
 		soloState = (soloState == 0) ? 1 : 0;
@@ -265,7 +296,10 @@ function wikiSidebarContent(species) {
 	content += `<div class="clear"></div>
 		<h3>Listen</h3>
 		<div class="solo-play-wrap">
-			<i class="fas fa-play-circle solo-play" value="0" species="${species}"></i>
+			${icon(faPlayCircle, {
+				classes: ['solo-play'],
+				attributes: { 'value': 0, 'species': species }
+			}).html}
 		</div>
 		<p>Click play to hear only this species' call. The sonification on the map
 		will be muted until you pause.</p>`;
@@ -315,13 +349,11 @@ map.on("resize", function(e){
 
 // Click on "view more" link in popup to open the sidebar pane
 map.on("popupopen", function(e){
-	document.querySelector(".openInfo").addEventListener("click", function(q){
+	shadow.querySelector(".openInfo").addEventListener("click", function(q){
 		let b = e.popup.options.species;
 		replaceWikiPane(b);
 		sidebar.open('shorebirds-bird-data');
 		map.closePopup();
 	})
 });
-
-
 
