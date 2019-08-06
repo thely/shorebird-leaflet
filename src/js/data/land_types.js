@@ -25,7 +25,7 @@ var land_types = [
 	"Estuarine Emergent Wetlands",
 	"Unconsolidated Shore",
 	
-	"More Water?"
+	"Deep Water"
 ];
 
 export default land_types;
