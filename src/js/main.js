@@ -114,7 +114,7 @@ sidebar.addPanel({
 			 </select>
 			 <div class="clear"></div>
 			 <h4>Dates</h4>
-			 <select class="date-select">
+			 <select class="date-select drop-glow">
 			 	${genDateOptions(useData)}
 			 </select>
 			 </div>`,
@@ -123,14 +123,14 @@ sidebar.addPanel({
 sidebar.addPanel({
 	id: "shorebirds-pop-table",
 	tab: icon(faChartBar).html,
-	title: "Total Birds",
-	pane: "<p>Select a day to view population data.</p><table id='bird-table'></table>",
+	title: "Population Data",
+	pane: "<div class='pop-desc'><p>Select a day to view population data.</p></div><table id='bird-table'></table>",
 });
 
 sidebar.addPanel({
 	id: "shorebirds-bird-data",
 	tab: icon(faFeather).html,
-	title: "Species Data",
+	title: "Species Detail",
 	pane: "<div id='bird-wiki'><p>Select a bird on the map to see more information.</p></div>",
 });
 
@@ -179,6 +179,7 @@ function changeIsland(i) {
 	tiles = new LandMap(map, useData, habitatLayer);
 	let d = shadow.querySelector("select.date-select").innerHTML = genDateOptions(useData);
 	map.flyTo(useData.center);
+	shadow.querySelector("select.date-select").classList.add("drop-glow");
 }
 
 function changeDate(date) {
@@ -194,7 +195,10 @@ function changeDate(date) {
 	birdMarkers.clearLayers();
 	pop.generateBirds(useData, date, tiles);
 	sfx.setup(useData.birds_and_days[date].count, bird_data);
+	sfx.update(pop.getVisibleBirds(), pop.getBirds());
 	popTable(date);
+
+	shadow.querySelector("select.date-select").classList.remove("drop-glow");
 }
 
 function genDateOptions(useData) {
@@ -211,7 +215,15 @@ function genDateOptions(useData) {
 
 function popTable(day) {
 	let today = useData.birds_and_days[day];
-	let p = `<p>Population data for ${today.date}. Sort by species, population all day, and population visible right now.</p>`;
+	let p = `<p>The table below shows all population data for birds on ${today.date} 
+			 at ${useData.name}.</p><ul>
+			 <li><strong>All Day vs Scaled.</strong> All Day numbers represent the total number
+			 of birds surveyed on ${today.date}; the Scaled number is what's displayed, scaled by 1/24.</li>
+			 <li><strong>Select a species.</strong> Selecting a row from this list will highlight all
+			 its members on the map. More information on that species is then visible in the
+			 <span class="link-away">${icon(faFeather).html} Species Data</span> tab.</li>
+			 <li><strong>Mute a species.</strong> Muting a species frees up audio channels for other
+			 birds. This is best used on a high-population species.</li>`;
 	let content = `<thead><tr>
 		<th data-sort-default>Species</th>
 		<th>All Day</th>
@@ -232,6 +244,7 @@ function popTable(day) {
 	}
 	content += "</tbody>";
 
+	shadow.querySelector('.pop-desc').innerHTML = p;
 	shadow.getElementById("bird-table").innerHTML = content;
 	tablesort(shadow.getElementById("bird-table"));
 	
@@ -259,9 +272,10 @@ function popTable(day) {
 let soloState = 0;
 function listenSpeciesRow() {
 	console.log("clicked on a row");
-	let prev = shadow.querySelector(".row-active");
-	while (prev != null && prev.length) {
-		prev[0].classList.remove("row-active");
+	let prev = shadow.querySelectorAll(".row-active");
+	for (let item of prev) {
+		console.log(item);
+		item.classList.remove("row-active");
 	};
 	this.classList.add("row-active");
 	let b = parseInt(this.attributes["species-index"].value);
@@ -277,45 +291,55 @@ function listenSpeciesRow() {
 function replaceWikiPane(b) {
 	shadow.getElementById("bird-wiki").innerHTML = wikiSidebarContent(b);
 
-	shadow.querySelector(".solo-play").addEventListener("click", function(e) {
+	shadow.querySelector(".solo-play-wrap").addEventListener("click", function(e) {
+		console.log("clicking on solo play");
+		let elem = e.target.closest(".solo-play-wrap");
 		soloState = (soloState == 0) ? 1 : 0;
+		
 		let ico = (soloState == 0) ? faPlayCircle : faPauseCircle;
-		let spec = e.target.attributes.species.value;
+		let spec = elem.attributes.species.value;
 		sfx.toggleSolo(soloState, spec);
-		e.target.innerHTML = icon(ico, {
+		elem.innerHTML = icon(ico, {
 			classes: ['solo-play'],
-			attributes: { 'value': 0, 'species': spec }
+			// attributes: { 'value': 0, 'species': spec }
 		}).html;
 	});
 }
 
 function wikiSidebarContent(species) {
 	let content = 
-		`
+		`<div class="wiki-section wiki-section-main">
 		<h3 class="birdName">${bird_data[species].common_name} 
 			<span class="science">(${bird_data[species].scientific_name})</span>
 		</h3>
 		<p class="birdImage"><img src="${wiki_data[species].image}" /></p>
 		<blockquote class="birdSummary">${wiki_data[species].summary}</blockquote>
 		<a href="${wiki_data[species].url}"><p>View full Wikipedia article</p></a>
-		`;
+		</div>`;
 
 	content += `<div class="clear"></div>
+		<div class="wiki-section wiki-section-listen">
 		<h3>Listen</h3>
-		<div class="solo-play-wrap">
+		<div class="solo-play-wrap" species=${species}>
 			${icon(faPlayCircle, {
 				classes: ['solo-play'],
-				attributes: { 'value': 0, 'species': species }
+				// attributes: { 'value': 0, 'species': species }
 			}).html}
 		</div>
 		<p>Click play to hear only this species' call. The sonification on the map
 		will be muted until you pause.</p>
-		<div class="clear"></div>`;
+		<div class="clear"></div></div>`;
 
 	// stats across all days and islands
-	content += "<h3>Appearances</h3>";
+	content += 
+		`<div class="wiki-section wiki-section-appearances">
+		<h3>Appearances</h3>
+		<p>The tables below show the population for this bird on every day polled
+		between the two islands. This number is the total birds seen all day, not
+		the scaled population shown on the map.</p>`;
 	content += speciesAppearancesTable("Cobb Island", cobb_data, species);
 	content += speciesAppearancesTable("Hog Island", hog_data, species);
+	content += "</div>";
 	
 	return content;
 }
@@ -323,7 +347,7 @@ function wikiSidebarContent(species) {
 // table of one species' population on all days, for one island
 function speciesAppearancesTable(island, data, species) {
 	let content = `<div class="bird-all-days">
-		<h4>${island}</h4><table><thead><tr>
+		<h5>${island}</h5><table><thead><tr>
 		<td>Date</td>
 		<td>Population</td>
 		</tr></thead><tbody>`;
@@ -344,11 +368,14 @@ function speciesAppearancesTable(island, data, species) {
 // update the map when it pans
 map.on("move", function(e){
 	let sq = tiles.getSquareAtMapCenter();
-	// console.log(sq);
-
 	pop.update();
 	sfx.update(pop.getVisibleBirds(), pop.getBirds(), sq);
 });
+
+map.on("moveend", function(e) {
+	console.log("move has ended");
+	map.invalidateSize();
+})
 
 // update the latlng of the center when we resize
 map.on("resize", function(e){
@@ -366,3 +393,23 @@ map.on("popupopen", function(e){
 	})
 });
 
+map.on("click", function(e) {
+	console.log(map.mouseEventToLatLng(e.originalEvent));
+});
+
+// ----------------------------------------
+// Assorted Polyfills
+// ----------------------------------------
+if (window.Element && !Element.prototype.closest) {
+    Element.prototype.closest =
+    function(s) {
+        var matches = (this.document || this.ownerDocument).querySelectorAll(s),
+            i,
+            el = this;
+        do {
+            i = matches.length;
+            while (--i >= 0 && matches.item(i) !== el) {};
+        } while ((i < 0) && (el = el.parentElement));
+        return el;
+    };
+}

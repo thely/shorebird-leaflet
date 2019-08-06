@@ -24,7 +24,7 @@ function AudioManager() {
 	this.birdBus.gain.value = 1;
 
 	this.ambiBus = this.ctx.createGain();
-	this.ambiBus.gain.value = 0.5;
+	this.ambiBus.gain.value = 0.4;
 	
 	this.masterGain = this.ctx.createGain();
 	this.masterGain.gain.value = 0.5;
@@ -61,6 +61,9 @@ function AudioManager() {
 	this.soloNode = {};
 }
 
+// ----------------------------------------
+// Setup/Build
+// ----------------------------------------
 AudioManager.prototype.setup = function(today, birdData) {
 	this.setDate(today, birdData);
 }
@@ -92,11 +95,11 @@ AudioManager.prototype.reset = function(allBirds) {
 	}
 
 	this.muteList = [];
-	console.log("Here's our status after resetting: ");
-	console.log(this.nodes.active);
-	console.log(this.nodes.inactive);
 }
 
+// ----------------------------------------
+// Update
+// ----------------------------------------
 AudioManager.prototype.update = function(birds, allBirds, habitat) {
 	if (!this.audioLoaded) {
 		return;
@@ -183,6 +186,9 @@ AudioManager.prototype.moveVisibleNode = function(b, n) {
 	// }
 }
 
+// ----------------------------------------
+// Volume: Mute/Solo/Master
+// ----------------------------------------
 AudioManager.prototype.muteSpecies = function(spec, muted, allBirds) {
 	let species = parseInt(spec);
 	if (muted && this.muteList.indexOf(species) == -1) {
@@ -235,7 +241,9 @@ AudioManager.prototype.master = function(val) {
 	}
 }
 
-// Play the atmospheric sounds
+// ----------------------------------------
+// Ambient BG Sound
+// ----------------------------------------
 AudioManager.prototype.ambienceInit = function() {
 	for (let i = 0; i < ambience.length; i++) {
 		let x = this.ctx.createBufferSource();
@@ -250,8 +258,8 @@ AudioManager.prototype.ambienceInit = function() {
 		let fileStartPos = C.floating({min: x.loopStart, max: x.loopEnd});
 		this.ambiNodes.source[i] = x;
 		this.ambiNodes.gains[i] = q;
-		console.log(this.ambiNodes.source[i]);
-		console.log(this.ambiNodes.gains[i]);
+		// console.log(this.ambiNodes.source[i]);
+		// console.log(this.ambiNodes.gains[i]);
 		
 		this.ambiNodes.source[i].connect(this.ambiNodes.gains[i]);
 		this.ambiNodes.gains[i].connect(this.ambiBus);
@@ -274,9 +282,10 @@ function habitatSquareAverage(sq) {
 	}
 
 	let scale = 3;
-	total.blue = total.blue / (9*scale);
-	total.green = total.green / (9*scale);
-	total.brown = total.brown / (9*scale);
+	let pi = Math.PI / 3;
+	total.blue = (total.blue / (9*scale)) * pi;
+	total.green = (total.green / (9*scale)) * pi;
+	total.brown = (total.brown / (9*1.5)) * pi;
 
 	console.log(total);
 
@@ -286,17 +295,19 @@ function habitatSquareAverage(sq) {
 AudioManager.prototype.playBackground = function(hab) {
 	let total = habitatSquareAverage(hab);
 
-	this.ambiNodes.gains[0].gain.linearRampToValueAtTime(total.blue, this.ctx.currentTime + 0.5);
-	this.ambiNodes.gains[1].gain.linearRampToValueAtTime(total.brown, this.ctx.currentTime + 0.5);
-	this.ambiNodes.gains[2].gain.linearRampToValueAtTime(total.green, this.ctx.currentTime + 0.5);
+	this.ambiNodes.gains[0].gain.linearRampToValueAtTime(total.blue, this.ctx.currentTime + 0.1);
+	this.ambiNodes.gains[1].gain.linearRampToValueAtTime(total.brown, this.ctx.currentTime + 0.1);
+	this.ambiNodes.gains[2].gain.linearRampToValueAtTime(total.green, this.ctx.currentTime + 0.1);
 }
 
-// Load files in as needed
+// ----------------------------------------
+// Helpers
+// ----------------------------------------
 function __loadFiles() {
 	let samps = [{ name: B_SOUNDFILE }];
 	this.mng.addSamples(samps);
 	this.mng.loadAllSamples(progress => {
-		console.log("loading...");
+		console.log(progress);
 	}).then(() => {
 		console.log("sounds loaded!");
 		this.audioLoaded = true;

@@ -9,7 +9,6 @@ function LandMap(map, useData, layer) {
 	let size = useData.scaling;
 	let prev = map.latLngToContainerPoint(useData.origin);
 	let tiles = [];
-	// console.log(land_types);
 
 	for (let i = 0; i < useData.pixel_cover_list.length; i++) {
 		let start = L.point((Math.floor(i / useData.pixel_dim.rows) * size) + prev.x,
@@ -23,13 +22,12 @@ function LandMap(map, useData, layer) {
 			stroke: false, 
 			fill: true, 
 			fillOpacity: 0.2}
-		).bindTooltip(i + ": " + land_types[useData.pixel_cover_list[i]]).openTooltip();
+		).bindTooltip(land_types[useData.pixel_cover_list[i]]).openTooltip();
 
 		tiles[i].addTo(layer);
 	}
 
 	map.setZoom(oldZoom, { animate: false });
-	console.log("zoom after: " + map.getZoom());
 
 	this.getTiles = function() {
 		return tiles;
