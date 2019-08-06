@@ -2,33 +2,30 @@
 	all: initial;
 }
 
-// #shorebirds-container {
-// 	background-color: transparent;
-// 	font-family: Helvetica, sans-serif !important;
-// 	font-size: 12px;
-// 	margin: 0;
-// 	padding: 0;
-// 	max-width: 100%;
-// 	width: 100%;
+// p, a, span, i, b, select, option, blockquote, em, strong, 
+// div, section, header, footer, table, tr, th, td, ul, ul > li {
+* {
+	font-family: "Open Sans", Helvetica, sans-serif;
+	font-weight: 400;
+}
 
-	h1, h2, h3, h4, h5, h6,
-	select, option, blockquote, p,
-	div, section, header, footer {
-		font-family: Helvetica, sans-serif !important;
-	}
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Montserrat", sans-serif;
+	font-weight: 700;
+}
 
-	h4 {
-		font-size: 14px;
-	}
+h4 {
+	font-size: 14px;
+}
 
-	p {
-		margin: 15px 0;
-	}
+p {
+	margin: 15px 0;
+}
 
-	svg[data-prefix="fas"] {
-		margin: 0 auto;
-		width: 16px;
-	}
+svg[data-prefix="fas"] {
+	margin: 0 auto;
+	width: 16px;
+}
 
 #shorebirds-map {
 	height: 600px;

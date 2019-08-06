@@ -1,18 +1,57 @@
 #shorebirds-bird-data #bird-wiki {
-	h3:not(.birdName) {
-		margin-top: 2em;
-		margin-bottom: 0.5em;
+	.birdName {
+		font-size: 21px;
+		margin-bottom: 0;
+		span {
+			font-size: 14px;
+			font-style: italic;
+		}
 	}
+
+	.wiki-section {
+		margin: 2em 0;
+
+	}
+
+	h3:not(.birdName) {
+		font-size: 17px;
+		position: relative;
+
+		// &:after {
+		// 	content: "";
+		// 	display: block;
+		// 	position: absolute;
+		// 	width: 10px;
+		// 	height: 2px;
+		// 	background-color: #cecece;
+		// }
+	}
+
 	.birdSummary {
-		border-left: 2px solid grey;
-		margin-left: 0.25em;
-		margin-right: 0;
-		padding-left: 1.75em;
+		// border-left: 6px solid #cecece;
+		margin-left: 3em;
+		margin-right: 3em;
+		// padding-left: 1.75em;
+		position: relative;
+
+		&:before {
+			background-color: #9cd1ff;
+			content: "";
+			height: 70%;
+			left: -7%;
+			top: 0.8em;
+			position: absolute;
+			width: 6px;
+			z-index: 2;
+		}
 	}
 	.birdImage {
 		max-width: 100%;
+		position: relative;
+		z-index: 1;
 
 		img {
+			border-radius: 2%;
 			max-width: 100%;
 		}
 	}
@@ -23,7 +62,10 @@
 		margin-right: 2em;
 	}
 
-	.bird-all-days h4 {
+	.bird-all-days h5{
+		font-family: "Open Sans", Helvetica, sans-serif !important;
+		font-size: 13px;
+		font-weight: bold;
 		margin-bottom: 0.6em;
 		margin-top: 0.6em;
 	}

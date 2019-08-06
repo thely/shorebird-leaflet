@@ -1,15 +1,26 @@
 // species table in the per-day chart
-#shorebirds-pop-table #bird-table {
-	.bird-shade {
-		border: 0px solid transparent;
+#shorebirds-pop-table {
+	#bird-table {
+		.bird-shade {
+			border: 0px solid transparent;
+		}
+
+		tbody tr:hover {
+			background-color: aliceblue;
+			cursor: pointer;
+		}
+
+		tbody tr.row-active {
+			background-color: #c2dbf0;
+		}
 	}
 
-	tbody tr:hover {
-		background-color: aliceblue;
-		cursor: pointer;
+	.pop-desc {
+		margin-bottom: 2em;
+		
+		ul {
+			padding-left: 2em;
+		}	
 	}
-
-	tbody tr.row-active {
-		background-color: #c2dbf0;
-	}
+	
 }
