@@ -97,6 +97,10 @@ AudioManager.prototype.reset = function(allBirds) {
 	this.muteList = [];
 }
 
+AudioManager.prototype.hasAudioLoaded = function() {
+	return this.audioLoaded;
+}
+
 // ----------------------------------------
 // Update
 // ----------------------------------------

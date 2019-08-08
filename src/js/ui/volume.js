@@ -1,3 +1,6 @@
+// Adapted from https://github.com/consbio/Leaflet.Range, adds a
+// volume mute on top of the range slider
+
 var L = require("leaflet");
 import { library, icon } from '@fortawesome/fontawesome-svg-core';
 import { faVolumeUp, faVolumeDown } from '@fortawesome/free-solid-svg-icons';

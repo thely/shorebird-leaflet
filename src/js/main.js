@@ -4,6 +4,8 @@ var tablesort = require('tablesort');
 import "leaflet-sidebar-v2/js/leaflet-sidebar.min.js";
 import "tablesort/src/sorts/tablesort.number.js";
 import "./ui/volume.js";
+import "./ui/message.js";
+import "./ui/defaultextent.js";
 
 import LandMap from "./map.js";
 import Population from "./population.js";
@@ -72,6 +74,7 @@ let overlays = {
 let layers = L.control.layers(baseMaps, overlays).addTo(map);
 let zoom = L.control.zoom({position: "topleft"}).addTo(map);
 let volume = L.control.range().addTo(map);
+let home = L.control.defaultExtent().setCenter(useData.center).addTo(map);
 
 volume.on("input change click", function(e) {
 	console.log("master volume to "+e.value);
@@ -87,7 +90,6 @@ volume.on("input change click", function(e) {
 let tiles = new LandMap(map, useData, habitatLayer);
 let pop = new Population(map, birdMarkers);
 let sfx = new AudioManager();
-
 
 // ----------------------------------------
 // UI - Sidebar
@@ -179,6 +181,7 @@ function changeIsland(i) {
 	tiles = new LandMap(map, useData, habitatLayer);
 	let d = shadow.querySelector("select.date-select").innerHTML = genDateOptions(useData);
 	map.flyTo(useData.center);
+	home.setCenter(useData.center);
 	shadow.querySelector("select.date-select").classList.add("drop-glow");
 }
 
@@ -396,6 +399,19 @@ map.on("popupopen", function(e){
 map.on("click", function(e) {
 	console.log(map.mouseEventToLatLng(e.originalEvent));
 });
+
+let audioStatus = L.control.messagebox({position: "bottomright"}).addTo(map);
+let soundStart = function() {
+	if (sfx.hasAudioLoaded()) {
+		audioStatus.showTimed("sounds loaded! move the map around to start audio playback.", 4000);
+	}
+	else {
+		audioStatus.show("sounds loading...");
+		setTimeout(soundStart, 1000);	
+	}
+};
+soundStart();
+
 
 // ----------------------------------------
 // Assorted Polyfills

@@ -83,7 +83,37 @@ svg[data-prefix="fas"] {
 	}	
 }
 
+.leaflet-control-messagebox {
+	background-color: white;
+	max-width: 120px;
+	padding: 8px;
+
+	&.sounds-loaded-hide {
+		animation: fadeout 5s;
+		animation-fill-mode: forwards;
+	}
+
+	@keyframes fadeout {
+		0% {
+			opacity: 1;
+		}
+		70% {
+			opacity: 1;
+		}
+		100% {
+			display: none;
+			opacity: 0;
+		}
+	}
+}
+
+.leaflet-control-defaultextent-toggle {
+	display: flex;
+}
+
 .clear {
 	clear: both;
 	display: table;
 }
+
+
