@@ -59,6 +59,8 @@ function AudioManager() {
 	this.isMuted = false;
 
 	this.soloNode = {};
+
+	this.safariOnce = true;
 }
 
 // ----------------------------------------
@@ -73,11 +75,12 @@ AudioManager.prototype.setDate = function(today, birdData) {
 	this.sounds = [];
 
 	this.sounds = __getSoundLoopPoints.call(this, today, birdData);
-	console.log(this.sounds);
+	// console.log(this.sounds);
 }
 
 // build the nodes out when the player is created
 AudioManager.prototype.makeNodes = function() {
+	console.log("making nodes because the sound is loaded");
 	this.nodes.active = [];
 	var buffer = this.mng.getAllSamples()[0].audioBuffer;
 
@@ -85,6 +88,8 @@ AudioManager.prototype.makeNodes = function() {
 		this.nodes.inactive[i] = new AudioNode(this.ctx, this.hrtf, buffer);
 		this.nodes.inactive[i].connect(this.birdBus);
 	}
+
+	console.log(this.nodes);
 
 	this.ambienceInit();
 }
@@ -101,13 +106,31 @@ AudioManager.prototype.hasAudioLoaded = function() {
 	return this.audioLoaded;
 }
 
+AudioManager.prototype.safariHack = function() {
+	if (this.audioLoaded === true && this.safariOnce) {
+		console.log("attempting to make safari play nice");
+		let myFakeNode = this.ctx.createBufferSource();
+		myFakeNode.buffer = this.mng.getAllSamples()[0].audioBuffer;
+		let fakeGain = this.ctx.createGain();
+		fakeGain.gain.value = 0;
+		myFakeNode.connect(fakeGain);
+		fakeGain.connect(this.ctx.destination);
+
+		this.safariOnce = false;
+		this.ctx.resume();
+		myFakeNode.start(0);
+		myFakeNode.stop(this.ctx.currentTime + 0.25);
+	}
+}
+
 // ----------------------------------------
 // Update
 // ----------------------------------------
 AudioManager.prototype.update = function(birds, allBirds, habitat) {
-	if (!this.audioLoaded) {
+	if (this.audioLoaded !== true) {
 		return;
 	}
+
 	if (habitat) {
 		this.playBackground(habitat);
 	}
@@ -291,7 +314,7 @@ function habitatSquareAverage(sq) {
 	total.green = (total.green / (9*scale)) * pi;
 	total.brown = (total.brown / (9*1.5)) * pi;
 
-	console.log(total);
+	// console.log(total);
 
 	return total;
 }
@@ -311,7 +334,7 @@ function __loadFiles() {
 	let samps = [{ name: B_SOUNDFILE }];
 	this.mng.addSamples(samps);
 	this.mng.loadAllSamples(progress => {
-		console.log(progress);
+		this.audioLoaded = progress;
 	}).then(() => {
 		console.log("sounds loaded!");
 		this.audioLoaded = true;

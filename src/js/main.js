@@ -368,6 +368,10 @@ function speciesAppearancesTable(island, data, species) {
 // Listeners
 // ----------------------------------------
 
+map.on("movestart", function(e){
+	shadow.querySelector("#shorebirds-map").classList.add("no-text-select");
+})
+
 // update the map when it pans
 map.on("move", function(e){
 	let sq = tiles.getSquareAtMapCenter();
@@ -378,12 +382,12 @@ map.on("move", function(e){
 map.on("moveend", function(e) {
 	console.log("move has ended");
 	map.invalidateSize();
-})
+	shadow.querySelector("#shorebirds-map").classList.remove("no-text-select");
+});
 
 // update the latlng of the center when we resize
 map.on("resize", function(e){
 	pop.recenter();
-	// map.invalidateSize();
 });
 
 // Click on "view more" link in popup to open the sidebar pane
@@ -396,21 +400,47 @@ map.on("popupopen", function(e){
 	})
 });
 
-map.on("click", function(e) {
-	console.log(map.mouseEventToLatLng(e.originalEvent));
+map.on("click", function(e){
+	// if (L.Browser.safari) {
+	// 	console.log("safari click");
+	// 	sfx.safariHack();
+	// }
 });
 
+
 let audioStatus = L.control.messagebox({position: "bottomright"}).addTo(map);
+
 let soundStart = function() {
-	if (sfx.hasAudioLoaded()) {
-		audioStatus.showTimed("sounds loaded! move the map around to start audio playback.", 4000);
+	let val = sfx.hasAudioLoaded();
+	if (val >= 0 && val < 1) {
+		audioStatus.show("sounds loading...", "progress-bar", val);
+		setTimeout(soundStart, 100);
+	}
+	else if (val === 1) {
+		audioStatus.show("sounds decoding...", "progress-wait");
+		setTimeout(soundStart, 1000);
+	}
+	else if (val === true) {
+		if (L.Browser.safari) {
+			audioStatus.show("sounds loaded! click me to enable audio.", "sounds-loaded-click-dismiss");
+			shadow.querySelector('.sounds-loaded-click-dismiss').addEventListener("click", startSafari);
+		}
+		else {
+			audioStatus.show("sounds loaded! move the map around to start audio playback.", "sounds-loaded-hide");
+		}
 	}
 	else {
-		audioStatus.show("sounds loading...");
-		setTimeout(soundStart, 1000);	
+		audioStatus.show("file load issue! try reloading this page.");
 	}
 };
 soundStart();
+
+function startSafari() {
+	console.log("clicked the thing");
+	sfx.safariHack();
+	shadow.querySelector('.sounds-loaded-click-dismiss').removeEventListener("click", startSafari);
+	audioStatus.show("sounds playing! if you don't hear anything, move the map around.", "sounds-loaded-hide");
+}
 
 
 // ----------------------------------------

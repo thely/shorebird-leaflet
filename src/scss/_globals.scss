@@ -2,8 +2,6 @@
 	all: initial;
 }
 
-// p, a, span, i, b, select, option, blockquote, em, strong, 
-// div, section, header, footer, table, tr, th, td, ul, ul > li {
 * {
 	font-family: "Open Sans", Helvetica, sans-serif;
 	font-weight: 400;
@@ -35,6 +33,13 @@ svg[data-prefix="fas"] {
 	.leaflet-bar a, .leaflet-bar a:hover,
 	.leaflet-popup-close-button {
 		text-decoration: none;
+	}
+
+	&.no-text-select {
+		-webkit-user-select: none; /* Chrome all / Safari all */
+		-moz-user-select: none;    /* Firefox all             */
+		-ms-user-select: none;     /* IE 10+                  */
+		 user-select: none;        /* Likely future           */
 	}
 }
 
@@ -86,28 +91,75 @@ svg[data-prefix="fas"] {
 .leaflet-control-messagebox {
 	background-color: white;
 	max-width: 120px;
+	overflow-x: hidden;
 	padding: 8px;
+	position: relative;
+
+	&.progress-bar::before {
+		background-color: #cecece;
+		content: "";
+		display: block;
+		height: 100%;
+		position: absolute;
+		top: 0; left: 0;
+		width: var(--progress-val);
+	}
+
+	&.progress-wait .message-text {
+		animation: pulse 1s infinite;
+		animation-direction: alternate;
+		animation-timing-function: ease-in-out;
+	}
 
 	&.sounds-loaded-hide {
 		animation: fadeout 5s;
 		animation-fill-mode: forwards;
+		background-color: #faf7a0;
+	}
+
+	&.sounds-loaded-click-dismiss {
+		background-color: #faf7a0;
+		cursor: pointer;
 	}
 
 	@keyframes fadeout {
 		0% {
+			background-color: #faf7a0;
 			opacity: 1;
 		}
+		25% {
+			background-color: white;
+		}
 		70% {
+			background-color: white;
 			opacity: 1;
 		}
 		100% {
+			background-color: white;
 			display: none;
 			opacity: 0;
 		}
 	}
+
+	@keyframes pulse {
+		0% { 
+			color: black;
+			// opacity: 1; 
+		}
+		100% { 
+			color: #88a2b9;
+			// opacity: 0.6; 
+		}
+	}
+
+	.message-text {
+		display: block;
+		position: relative;
+		z-index: 99;
+	}
 }
 
-.leaflet-control-defaultextent-toggle {
+.leaflet-bar a.leaflet-control-defaultextent-toggle {
 	display: flex;
 }
 
