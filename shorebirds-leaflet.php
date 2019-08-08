@@ -10,14 +10,24 @@
  */
 
 function shorebirds_leaflet_view($atts) {
-	$content = file_get_contents("index.html");
-	$dir = plugin_dir_path(__DIR__);
+	$folder = plugin_dir_path( __FILE__ );
+	ob_start(); // start output buffer
 
-	echo "<pre>";
-	echo "My directory: " + $dir;
-	echo $content;
-	echo "</pre>";
-	return $content;
+    include $folder . 'index.php';
+    $template = ob_get_contents(); // get contents of buffer
+    ob_end_clean();
+
+    wp_enqueue_script('birds-hrtf');
+    wp_enqueue_script('birds-bundle');
+    return $template;
 }
 
 add_shortcode('shorebirds-leaflet', 'shorebirds_leaflet_view');
+
+function shorebirds_enqueue($atts) {
+	$folder = plugin_dir_path( __FILE__ );
+	wp_register_script('birds-hrtf', plugins_url("assets/js/hrtf.js", __FILE__), [], null, true);
+	wp_register_script('birds-bundle', plugins_url("assets/js/bundle.js", __FILE__), ['birds-hrtf'], "0.6", true);
+}
+
+add_action('wp_enqueue_scripts','shorebirds_enqueue');
