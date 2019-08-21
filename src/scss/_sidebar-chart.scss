@@ -5,13 +5,42 @@
 			border: 0px solid transparent;
 		}
 
+		tbody tr {
+			position: relative;
+			
+			.magnify {
+				display: none;
+				margin: 0.3em 0;
+				opacity: 0;
+				right: -5%;
+				position: absolute;
+			}
+
+			.magnify svg[data-prefix=fas] {
+				width: 10px;
+			}
+		}
+
 		tbody tr:hover {
 			background-color: aliceblue;
 			cursor: pointer;
+
+			.magnify {
+				color: grey;
+				display: block;
+				opacity: 1;
+			}
 		}
 
 		tbody tr.row-active {
 			background-color: #c2dbf0;
+			position: relative;
+
+			.magnify {
+				color: black;
+				display: block;
+				opacity: 1;
+			}
 		}
 	}
 
@@ -21,6 +50,10 @@
 		ul {
 			padding-left: 2em;
 		}	
+	}
+
+	.link-away svg {
+		width: 11px;
 	}
 	
 }

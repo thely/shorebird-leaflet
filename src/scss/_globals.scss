@@ -45,15 +45,60 @@ svg[data-prefix="fas"] {
 
 // Bird icon sizes/styles
 .bird-icon {
-	height: 18px;
-	width: 18px;
+	height: 16px;
+	opacity: 0;
+	width: 16px;
 }
 
-.species-active {
+.bird-icon svg {
+	stroke: grey;
+	stroke-width: 22px;
+}
+
+.bird-icon.bird-die {
+	animation: bird-exist 0.5s;
+	animation-direction: reverse;
+}
+
+.bird-icon.bird-live {
+	animation: bird-exist 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	animation-fill-mode: forwards;
+	// animation-delay: 2s;
+}
+
+@keyframes bird-exist {
+	0% {
+		margin-right: -50px;
+		margin-top: 20px;
+		height: 0;
+		opacity: 0;
+		width: 0;
+	}
+	25% {
+		opacity: 1;
+	}
+	100% {
+		margin-right: 0px;
+		margin-top: 0px;
+		height: 12px;
+		opacity: 1;
+		width: 12px;
+	}
+}
+
+.bird-icon.species-active {
 	filter: drop-shadow(2px 3px 3px rgba(0,0,0,0.6));
-	height: 25px !important;
-	width: 25px !important;
+	height: 18px !important;
+	margin-left: -9px !important;
+	margin-top: -9px !important;
+	transition: width 0.5s, height 0.5s;
+	width: 18px !important;
 	z-index: 999 !important;
+
+	svg {
+		stroke: black;
+		stroke-width: 14px;
+	}
 }
 
 //volume slider and mute

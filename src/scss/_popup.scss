@@ -46,6 +46,10 @@
 		}
 	}
 
+	li.openInfo svg {
+		width: 13px;
+	}
+
 	.openInfo:hover {
 		background-color: aliceblue;
 		cursor: pointer;

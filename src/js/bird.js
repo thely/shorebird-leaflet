@@ -4,9 +4,9 @@ var Victor = require("victor");
 import land_types from './data/land_types.js';
 
 import { library, icon } from '@fortawesome/fontawesome-svg-core';
-import { faMapMarkerAlt, faCrow, faInfo } from '@fortawesome/free-solid-svg-icons';
+import { faMapMarkerAlt, faCrow, faSearch } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faMapMarkerAlt, faCrow, faInfo);
+library.add(faMapMarkerAlt, faCrow, faSearch);
 
 L.BirdMarker = L.Marker.extend({
 	options: {
@@ -48,7 +48,7 @@ L.BirdMarker = L.Marker.extend({
 			<li><span class="popIconWrap">${icon(faMapMarkerAlt).html}</span>${land_types[this.options.habitat]}</li>
 			<li><span class="popIconWrap">${icon(faCrow).html}</span>1 of ${speciesData.total} seen today</li>
 			<li class="openInfo" value=${this.options.species}>
-				<span class="popIconWrap">${icon(faInfo).html}</span>View species information in sidebar
+				<span class="popIconWrap">${icon(faSearch).html}</span>View species information in sidebar
 			</li>
 			</ul>
 			`

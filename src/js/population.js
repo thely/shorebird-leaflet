@@ -11,7 +11,7 @@ import { B_POPSCALE } from "./settings.js";
 
 import "./ui/popups.js";
 
-function Population(map, layer) {
+function Population(map, layer, shadow) {
 	this.birds = [];
 	this.visibleBirds = [];
 	let dayIndex = 0;
@@ -19,6 +19,7 @@ function Population(map, layer) {
 	var tiles = {};
 	let center = map.getSize().divideBy(2);
 	this.colorList = [];
+	let popupIndex = 0;
 
 	this.getBirds = function() {
 		return this.birds;
@@ -28,11 +29,17 @@ function Population(map, layer) {
 		return this.visibleBirds;
 	}
 
-	this.highlightSpecies = function(shadow, species) {
+	this.cancelHighlight = function() {
 		let prev = shadow.querySelectorAll(".species-active");
 		for (let item of prev) {
 			item.classList.toggle("species-active");
 		};
+
+		this.birds[popupIndex].closePopup();
+	}
+
+	this.highlightSpecies = function(species) {
+		this.cancelHighlight();
 
 		let next = shadow.querySelectorAll(".bird-icon-"+species);
 		for (let item of next) {
@@ -49,6 +56,7 @@ function Population(map, layer) {
 				}).setContent(formatted);
 				// console.log(popup);
 
+				popupIndex = i;
 				this.birds[i].unbindPopup().bindPopup(popup).openPopup();
 				return this.birds[i];
 				// ret.push(this.birds[i]);
@@ -86,11 +94,22 @@ function Population(map, layer) {
 				});
 
 				for (let j = 0; j < pop; j++) { // single bird loop
-					this.birds.push(makeBird.call(this, i, icon, bCount));
+					let b = makeBird.call(this, i, icon, bCount);
+					let bElem = shadow.querySelectorAll(".bird-icon.bird-icon-"+i)[j];
+					bElem.style.animationDelay = C.floating({min: 0.0, max: 0.6}) + "s";
+					bElem.classList.add("bird-live");
+					this.birds.push(b);
 					bCount++;
 				}
+
+				// shadow.querySelector(".bird-icon-"+i).style.
 			}
 		}
+
+		Array.from(shadow.querySelectorAll(".bird-icon")).forEach(bird => {
+			bird.addEventListener("animationend", animeListener);
+			bird.addEventListener("webkitAnimationStart", animeListener);
+		});
 	}
 
 	this.update = function(event) {
@@ -134,6 +153,17 @@ function Population(map, layer) {
 		}).addTo(layer);
 
 		return bird;
+	}
+
+	function animeListener(el) {
+		console.log("bird is done animating");
+		// console.log(el.target);
+		el.target.removeEventListener("animationend", animeListener);
+		el.target.removeEventListener("webkitAnimationEnd", animeListener);
+
+		// Array.from(shadow.querySelectorAll(".bird-icon")).forEach(bird => {
+		// 	bird.removeEventListener("animationend", animeListener);
+		// });
 	}
 
 	function popData(species) {
