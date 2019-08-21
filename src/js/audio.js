@@ -2,10 +2,12 @@
 var L = require("leaflet");
 var C = require('chance').Chance();
 
-import { AudioContext } from 'standardized-audio-context';
-import { loadAudioBuffer } from 'audiobuffer-loader';
+// import { AudioContext } from 'standardized-audio-context';
+// import { loadAudioBuffer } from 'audiobuffer-loader';
 import SampleManager from 'sample-manager';
 import AudioNode from './audionode.js';
+import AudioStitcher from './audiostitch.js';
+
 import { B_SOUNDFILE, B_SOUNDFOLDER, B_MAXNODES } from "./settings.js";
 import bird_data from "./data/all_bird_data.js";
 import ambience from './data/ambient_sound.js';
@@ -15,7 +17,9 @@ function AudioManager() {
 
 	let type = (L.Browser.gecko) ? "ogg" : "mp3";
 	console.log("our type is " + type);
-	this.mng = new SampleManager(this.ctx, B_SOUNDFOLDER, type);
+	// this.mng = new SampleManager(this.ctx, B_SOUNDFOLDER, type);
+	this.stitch = new AudioStitcher(this.ctx, type);
+
 	this.max = B_MAXNODES;
 	console.log("max nodes: "+B_MAXNODES);
 
@@ -24,7 +28,7 @@ function AudioManager() {
 	this.birdBus.gain.value = 1;
 
 	this.ambiBus = this.ctx.createGain();
-	this.ambiBus.gain.value = 0.4;
+	this.ambiBus.gain.value = 0.2;
 	
 	this.masterGain = this.ctx.createGain();
 	this.masterGain.gain.value = 0.5;
@@ -49,9 +53,6 @@ function AudioManager() {
 		sceneChanged: false
 	};
 
-	this.hrtf = __getHRTF.call(this);
-	__loadFiles.call(this);
-
 	this.lastAmbi = -1;
 
 	this.audioLoaded = false;
@@ -66,6 +67,11 @@ function AudioManager() {
 // ----------------------------------------
 // Setup/Build
 // ----------------------------------------
+AudioManager.prototype.load = function() {
+	this.hrtf = __getHRTF.call(this);
+	__loadFiles.call(this);
+}
+
 AudioManager.prototype.setup = function(today, birdData) {
 	this.setDate(today, birdData);
 }
@@ -82,7 +88,7 @@ AudioManager.prototype.setDate = function(today, birdData) {
 AudioManager.prototype.makeNodes = function() {
 	console.log("making nodes because the sound is loaded");
 	this.nodes.active = [];
-	var buffer = this.mng.getAllSamples()[0].audioBuffer;
+	var buffer = this.getBuffer();
 
 	for (var i = 0; i < this.max; i++) {
 		this.nodes.inactive[i] = new AudioNode(this.ctx, this.hrtf, buffer);
@@ -106,11 +112,16 @@ AudioManager.prototype.hasAudioLoaded = function() {
 	return this.audioLoaded;
 }
 
+AudioManager.prototype.getBuffer = function() {
+	// return this.mng.getAllSamples()[0].audioBuffer;
+	return this.stitch.buffer;
+}
+
 AudioManager.prototype.safariHack = function() {
 	if (this.audioLoaded === true && this.safariOnce) {
 		console.log("attempting to make safari play nice");
 		let myFakeNode = this.ctx.createBufferSource();
-		myFakeNode.buffer = this.mng.getAllSamples()[0].audioBuffer;
+		myFakeNode.buffer = this.getBuffer();
 		let fakeGain = this.ctx.createGain();
 		fakeGain.gain.value = 0;
 		myFakeNode.connect(fakeGain);
@@ -197,7 +208,8 @@ function enableNode(bird) {
 	n.fadeout = false;
 
 	// let file = __getFile.call(this, birds[i].name);
-	let loopInfo = this.sounds[bird.options.species];
+	// let loopInfo = this.sounds[bird.options.species];
+	let loopInfo = { start: bird.options.info.start, end: bird.options.info.end };
 	this.nodes.active.unshift(n);
 	this.moveVisibleNode(bird, this.nodes.active[0]);
 	this.nodes.active[0].play(loopInfo);
@@ -236,7 +248,7 @@ AudioManager.prototype.toggleSolo = function(play, species) {
 	if (play) {
 		console.log("playing the solo node");
 		this.soloNode = this.ctx.createBufferSource(); 
-		this.soloNode.buffer = this.mng.getAllSamples()[0].audioBuffer;
+		this.soloNode.buffer = this.getBuffer();
 		this.soloNode.loopStart = bird_data[species].start;
 		this.soloNode.loopEnd = bird_data[species].end;
 		this.soloNode.loop = true;
@@ -250,7 +262,7 @@ AudioManager.prototype.toggleSolo = function(play, species) {
 		console.log("muting the solo node");
 		this.soloNode.stop();
 		this.birdBus.gain.value = 1;
-		this.ambiBus.gain.value = 0.5;
+		this.ambiBus.gain.value = 0.2;
 	}
 }
 
@@ -274,7 +286,7 @@ AudioManager.prototype.master = function(val) {
 AudioManager.prototype.ambienceInit = function() {
 	for (let i = 0; i < ambience.length; i++) {
 		let x = this.ctx.createBufferSource();
-		x.buffer = this.mng.getAllSamples()[0].audioBuffer;
+		x.buffer = this.getBuffer();
 		x.loop = true;
 		x.loopStart = ambience[i].start;
 		x.loopEnd = ambience[i].end;
@@ -312,7 +324,7 @@ function habitatSquareAverage(sq) {
 	let pi = Math.PI / 3;
 	total.blue = (total.blue / (9*scale)) * pi;
 	total.green = (total.green / (9*scale)) * pi;
-	total.brown = (total.brown / (9*1.5)) * pi;
+	total.brown = (total.brown / (9*scale)) * pi;
 
 	// console.log(total);
 
@@ -331,9 +343,8 @@ AudioManager.prototype.playBackground = function(hab) {
 // Helpers
 // ----------------------------------------
 function __loadFiles() {
-	let samps = [{ name: B_SOUNDFILE }];
-	this.mng.addSamples(samps);
-	this.mng.loadAllSamples(progress => {
+	this.stitch.loadAllFiles(progress => {
+		console.log(progress);
 		this.audioLoaded = progress;
 	}).then(() => {
 		console.log("sounds loaded!");
@@ -345,6 +356,23 @@ function __loadFiles() {
 		console.log("audio problem!");
 		console.log(e);
 	});
+	
+	// console.time("fileLoad");
+	// let samps = [{ name: B_SOUNDFILE }];
+	// this.mng.addSamples(samps);
+	// this.mng.loadAllSamples(progress => {
+	// 	this.audioLoaded = progress;
+	// }).then(() => {
+	// 	console.timeEnd("fileLoad");
+	// 	console.log("sounds loaded!");
+	// 	this.audioLoaded = true;
+	// 	if (this.nodes.active.length == 0 && this.nodes.inactive.length == 0) {
+	// 		this.makeNodes();
+	// 	}
+	// }).catch(e => {
+	// 	console.log("audio problem!");
+	// 	console.log(e);
+	// });
 }
 
 // get just the names of new files to be added
