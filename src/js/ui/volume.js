@@ -22,7 +22,8 @@ L.Control.Range = L.Control.extend({
     onAdd: function(map) {
         var container = L.DomUtil.create('div', 'volume-control leaflet-range-control leaflet-bar ' + this.options.orient);
         
-        let volUp = L.DomUtil.create('div', "volume-mute", container);
+        let volUp = L.DomUtil.create('a', 'volume-mute', container);
+        volUp.href = "#";
         volUp.setAttribute('value', 1);
         volUp.innerHTML = icon(faVolumeUp).html;
         
@@ -52,8 +53,15 @@ L.Control.Range = L.Control.extend({
 
         L.DomEvent.on(slider, 'change', function(e) {
             this.fire('change', {value: e.target.value});
-
         }.bind(this));
+
+        L.DomEvent.on(slider, 'click dblclick', function(e) {
+            L.DomEvent.stopPropagation;
+        });
+
+        L.DomEvent.on(volUp, 'dblclick', function(e) {
+            L.DomEvent.stopPropagation;
+        });
 
         L.DomEvent.on(slider, 'input', function(e) {
             this.fire('input', {value: e.target.value});
@@ -69,6 +77,8 @@ L.Control.Range = L.Control.extend({
             volUp.innerHTML = svg;
         	next = (next) ? slider.value : 0;
         	this.fire('click', {value: next});
+
+            L.DomEvent.stopPropagation;
         }.bind(this));
 
         this._slider = slider;
