@@ -11,10 +11,10 @@ import pixelColors from './data/colorlist.js';
 import land_types from './data/land_types.js';
 import { B_POPSCALE } from "./settings.js";
 
-import { library, icon } from '@fortawesome/fontawesome-svg-core';
-import { faBars, faChartBar, faSearch, faMap, faPlayCircle, faPauseCircle, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
+import { library, icon, layer } from '@fortawesome/fontawesome-svg-core';
+import { faBars, faChartBar, faSearch, faMap, faPlayCircle, faPauseCircle, faCaretLeft, faHeadphones, faSlash, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faBars, faChartBar, faSearch, faMap, faPlayCircle, faPauseCircle, faCaretLeft);
+library.add(faBars, faChartBar, faSearch, faMap, faPlayCircle, faPauseCircle, faCaretLeft, faHeadphones, faSlash, faQuestionCircle);
 
 // land types, usedata
 function SidebarContainer(map, shadow, useData) {
@@ -28,8 +28,10 @@ function SidebarContainer(map, shadow, useData) {
 		this.sidebar.addPanel({
 			id: "shorebirds-side-home",
 			tab: icon(faBars).html,
-			title: "Home",
-			pane: 	`<p>Select an island and a date from the list to get started. Picking a date
+			title: "Listening to the VA Barrier Islands",
+			pane: 	`
+					${generateAudioAlert()}
+					<p>Select an island and a date from the list to get started. Picking a date
 						will spatialize birds on the map that were present on that day, on that island.
 						For more information about how this works, see the about tab.</p>
 					 <div class="select-controls">
@@ -50,7 +52,7 @@ function SidebarContainer(map, shadow, useData) {
 			id: "shorebirds-pop-table",
 			tab: icon(faChartBar).html,
 			title: "Population Data",
-			pane: "<div class='pop-desc'><p>Select a day to view population data.</p></div><table id='bird-table'></table>",
+			pane: "<p class='pop-summary'>Select a day to view population data.</p><table id='bird-table'></table><div class='pop-desc'></div>",
 		}).disablePanel("shorebirds-pop-table");
 
 		this.sidebar.addPanel({
@@ -70,6 +72,50 @@ function SidebarContainer(map, shadow, useData) {
 			 <p>To see the land use map as an overlay, enable it via the layers control.</p>
 			 ${generateLandUseLegend()}`,
 		});
+
+		this.sidebar.addPanel({
+			id: "shorebirds-about",
+			tab: icon(faQuestionCircle).html,
+			title: "About",
+			pane:
+				`<p>Off the coast of Virginia are fourteen undeveloped islands, the Barrier Islands, which
+				not only protect the Eastern Shore’s coastline from storm damage but also contain an
+				incredible diversity of coastal wildlife. Among the wildlife that make these islands home
+				are shorebirds and seabirds, over 100,000 of which visit the Barrier Islands each
+				spring, either as a pit stop or to breed, as they migrate across the Atlantic coast.</p>
+
+				<p>This project takes a seabird census database from the Environmental Data Initiative (EDI)
+				created by a research team at the the University of Virginia, which describes
+				the populations of 95 species of seabirds and shorebirds on Cobb and Hog Islands over multiple
+				days in 1990. The actual positions of birds on the map are chosen based on their species' habitat 
+				preferences, which are chosen based on the islands' land use maps (hidden by default, but can be enabled in the
+				layers panel).</p>
+
+				<p>Some of the audio sources for the 95 bird species were recorded by Eli Stine, and the rest
+				are from the Xeno-Canto wild bird recording database. Bird sounds are positioned binaurally using
+				the Web Audio API and IRCAM's binaural FIR node.</p>
+
+				<h5>Credits</h5>
+				<p>Original Max/MSP version of this project by <a href="https://elistine.com/">Eli Stine</a> as part of his dissertation, 
+					<a href="https://elistine.com/diss">"Modeling Natural Systems in Immersive Electroacoustic Sound."</a></p>
+				<p>Javascript version of this project (current) by <a href="https://becky-brown.org">Becky Brown</a>, with support
+					by The Conservatory: Listening for Coastal Futures. Full source for this project is 
+					<a href="https://github.com/thely/shorebird-leaflet">available on Github.</a></p>
+				<p>Special thanks to University of Virginia Ph.D. candidate Alice Besterman for her GIS assistance 
+				and the Anheuser-Busch Coastal Research Center for island access.</p>
+
+
+				`
+
+				// <h4>Why don't the land use maps match up with the shape and size of the islands?</h4>
+				// <p>From virginiaplaces.org: "all barrier islands on Virginia's Eastern Shore are migrating towards the west.
+				//  As sea level rises, the islands are 'rolling over' as sand is eroded from the ocean side and redeposited on 
+				//  the bay side during storms."</p>
+		});
+
+// ----------------------------------------
+// Basic/Select Toggles
+// ----------------------------------------
 
 		// give close tabs the right svg
 		let closetabs = shadow.querySelectorAll('span.leaflet-sidebar-close');
@@ -97,6 +143,22 @@ function SidebarContainer(map, shadow, useData) {
 		});
 	}
 
+	// alert the user to no audio if they're on mobile
+	function generateAudioAlert() {
+		if (!L.Browser.mobile) {
+			return `<p class="home-alert">${icon(faHeadphones).html} This is a binaural experience; it sounds best in headphones.</p>`	
+		}
+		
+		return `<p class="home-alert no-sound">
+			${layer((push) => {
+				push(icon(faHeadphones))
+				push(icon(faSlash))
+			}).html}
+			Head's up! This webapp is too audio-intensive to run from your phone. You can still
+			view the map, but no sound will play. For the best experience, view this from a computer.
+		</p>`;
+	}
+
 	// build the date options for the given island
 	function genDateOptions(useData) {
 		let content = "<option value='-1'>--Pick a date--</option>";
@@ -106,7 +168,10 @@ function SidebarContainer(map, shadow, useData) {
 		return content;
 	}
 
-	// Sidebar Wiki
+// ----------------------------------------
+// Wiki
+// ----------------------------------------
+	
 	this.replaceWikiPane = function(b, soloCallback) {
 		shadow.getElementById("bird-wiki").innerHTML = wikiSidebarContent(b);
 
@@ -180,24 +245,42 @@ function SidebarContainer(map, shadow, useData) {
 		return content;
 	}
 
-	// Sidebar Chart
+// ----------------------------------------
+// Chart
+// ----------------------------------------
+
 	this.popTable = function(day, colorList, muteCallback, rowCallback) {
 		let today = useData.birds_and_days[day];
 		let p = `<p>The table below shows all population data for birds on ${today.date} 
-				 at ${useData.name}.</p><ul>
-				 <li><strong>All Day vs Scaled.</strong> All Day numbers represent the total number
-				 of birds surveyed on ${today.date}; the Scaled number is what's displayed, scaled by 1/24.</li>
-				 <li><strong>Select a species.</strong> Selecting a row from this list will highlight all
+				 at ${useData.name}. Hover over the table headers for more information; if you are on mobile,
+				 a brief explanation of each is below the table.</p>`;
+		let list = `
+				 <p><strong>All Day vs Scaled.</strong> All Day numbers represent the total number
+				 of birds surveyed on ${today.date}; the Scaled number is what's displayed, scaled by 1/24.</p>
+				 <p><strong>Select a species.</strong> Selecting a row from this list will highlight all
 				 its members on the map. More information on that species is then visible in the
-				 <span class="link-away">${icon(faSearch).html} Species Data</span> tab.</li>
-				 <li><strong>Mute a species.</strong> Muting a species frees up audio channels for other
-				 birds. This is best used on a high-population species.</li>`;
+				 <span class="link-away">${icon(faSearch).html} Species Data</span> tab.</p>
+				 <p><strong>Mute a species.</strong> Muting a species frees up audio channels for other
+				 birds. This is best used on a high-population species.</p>`;
 		let content = `<thead><tr>
-			<th data-sort-default>Species</th>
-			<th>All Day</th>
-			<th>Scaled</th>
-			<th data-sort-method="none">Color</th>
-			<th data-sort-method="none">Mute</th>
+			<th data-sort-default>Species
+				<span class="tooltiptext">The common name for this species. For more information, click on a
+				row in the table, or click on a bird on the map.</span>
+			</th>
+			<th>All Day
+				<span class="tooltiptext">The total population, per species, seen on ${today.date}.</span>
+			</th>
+			<th>Scaled
+				<span class="tooltiptext">The all-day population scaled down by 1/24 for readability.</span>
+			</th>
+			<th data-sort-method="none">Color
+				<span class="tooltiptext">The color of this species' icon on the map.</span>
+			</th>
+			<th data-sort-method="none">Mute
+				<span class="tooltiptext">Click to mute the audio for all displayed birds of this species.
+				Muting a species will free up audio channels for other birds, if one species is dominating
+				the soundscape.</span>
+			</th>
 			</tr></thead><tbody>`;
 		for (let i = 0; i < today.count.length; i++) {
 			if (today.count[i] > 0) {
@@ -216,7 +299,8 @@ function SidebarContainer(map, shadow, useData) {
 		}
 		content += "</tbody>";
 
-		shadow.querySelector(".pop-desc").innerHTML = p;
+		shadow.querySelector(".pop-summary").innerHTML = p;
+		shadow.querySelector(".pop-desc").innerHTML = list;
 		shadow.getElementById("bird-table").innerHTML = content;
 		tablesort(shadow.getElementById("bird-table"));
 		
@@ -240,6 +324,10 @@ function SidebarContainer(map, shadow, useData) {
 		}
 	}
 
+// ----------------------------------------
+// Land Legend
+// ----------------------------------------
+
 	// land types color and name
 	function generateLandUseLegend() {
 		let content = "<ul>";
@@ -254,3 +342,11 @@ function SidebarContainer(map, shadow, useData) {
 }
 
 export default SidebarContainer;
+
+
+/*
+	http://www.virginiaplaces.org/geology/barrier.html
+	Xeno-Canto
+	All of Wikipedia
+*/
+

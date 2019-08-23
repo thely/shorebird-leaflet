@@ -4,6 +4,7 @@ var C = require('chance').Chance();
 import "./ui/volume.js";
 import "./ui/message.js";
 import "./ui/defaultextent.js";
+// import "./lib/leaflet-providers.js";
 
 import LandMap from "./map.js";
 import Population from "./population.js";
@@ -14,7 +15,7 @@ import cobb_data from './data/cobb_data.js';
 import hog_data  from './data/hog_data.js';
 import bird_data  from './data/all_bird_data.js';
 
-import { B_POPSCALE, B_STARTZOOM, B_CSS } from "./settings.js";
+import { B_STARTZOOM, B_CSS } from "./settings.js";
 
 // ----------------------------------------
 // Shadow DOM??
@@ -54,27 +55,26 @@ let habitatLayer = L.layerGroup();
 let birdMarkers = L.layerGroup().addTo(map);
 
 let baseMaps = {
-	"Abstract": base,
+	"Abstract": base
 };
+
 let overlays = {
 	"Birds": birdMarkers,
 	"Habitats": habitatLayer
 };
 
 // Controls
-let layers = L.control.layers(baseMaps, overlays).addTo(map);
-let zoom = L.control.zoom({position: "topleft"}).addTo(map);
-let volume = L.control.range().addTo(map);
-let home = L.control.defaultExtent().setCenter(useData.center).addTo(map);
+let pos = (L.Browser.mobile) ? "topright" : "topleft";
+let layers = L.control.layers(baseMaps, overlays, {hideSingleBase: true}).addTo(map);
+let zoom = L.control.zoom({position: pos}).addTo(map);
+let home = L.control.defaultExtent({
+	position: pos,
+	text: "Center of island",
+	title: "Jump to island center",
+}).setCenter(useData.center).addTo(map);
 let sc = new SidebarContainer(map, shadow, useData);
 sc.init(changeIsland, changeDate);
 
-volume.on("input change click", function(e) {
-	console.log("master volume to "+e.value);
-	if (!L.Browser.mobile && sfx) {
-		sfx.master(parseFloat(e.value));
-	}
-});
 
 // ----------------------------------------
 // Data
@@ -82,43 +82,27 @@ volume.on("input change click", function(e) {
 
 let tiles = new LandMap(map, useData, habitatLayer);
 let pop = new Population(map, birdMarkers, shadow);
-let sfx = new AudioManager();
+
+// Sound stuff that should be missing in most cases
+let sfx, volume, audioStatus;
 if (!L.Browser.mobile) {
+	sfx = new AudioManager();
 	sfx.load();
+
+	volume = L.control.range().addTo(map);
+	volume.on("input change click", function(e) {
+		console.log("master volume to "+e.value);
+		if (sfx) {
+			sfx.master(parseFloat(e.value));
+		}
+	});
+
+	audioStatus = L.control.messagebox({position: "bottomright"}).addTo(map);
 }
 
 // ----------------------------------------
 // Listeners
 // ----------------------------------------
-
-function changeIsland(i) {
-	useData = (i == 0) ? cobb_data : hog_data;
-	birdMarkers.clearLayers();
-	habitatLayer.clearLayers();
-	tiles = new LandMap(map, useData, habitatLayer);
-	map.flyTo(useData.center);
-	home.setCenter(useData.center);
-}
-
-function changeDate(date) {
-	console.log("changing the date!");
-	if (date == -1) {
-		return;
-	}
-	if (!L.Browser.mobile && sfx.audioLoaded) {
-		console.log("resetting audio nodes because it's loaded");
-		sfx.reset(pop.getBirds());
-	}
-	birdMarkers.clearLayers();
-	pop.generateBirds(useData, date, tiles);
-	
-	sc.popTable(date, pop.colorList, muteListener, listenSpeciesRow);
-
-	if (!L.Browser.mobile) {
-		sfx.setup(useData.birds_and_days[date].count, bird_data);
-		sfx.update(pop.getVisibleBirds(), pop.getBirds());	
-	}
-}
 
 map.on("movestart", function(e){
 	shadow.querySelector("#shorebirds-map").classList.add("no-text-select");
@@ -143,23 +127,68 @@ map.on("resize", function(e){
 	pop.recenter();
 });
 
+map.on("click", function(e) {
+	sc.sidebar.close();
+});
+
 // Click on "view more" link in popup to open the sidebar pane
 map.on("popupopen", function(e){
 	sc.sidebar.enablePanel("shorebirds-bird-data");
-	sc.replaceWikiPane(e.popup.options.species, soloListener);
+	// sc.replaceWikiPane(e.popup.options.species, soloListener);
+	console.log("it open");
 
-	shadow.querySelector(".openInfo").addEventListener("click", function(q){
-		let b = e.popup.options.species;
-		sc.replaceWikiPane(b, soloListener);
-		sc.sidebar.open('shorebirds-bird-data');
-		map.closePopup();
-	})
+	setTimeout(function() {
+		console.log("adding timer");
+		shadow.querySelector(".openInfo").addEventListener("click", wikiFromPopup)
+	}, 800);
+	
 });
 
-map.on("click", function(e){});
+// map.on("popupclose", function(e){
+// 	console.log("it close");
+// 	shadow.querySelector(".openInfo").removeEventListener("click", wikiFromPopup);
+// });
 
+function wikiFromPopup(e) {
+	console.log("calling wiki popups??");
+	let b = this.value;
+	sc.replaceWikiPane(b, soloListener);
+	sc.sidebar.open('shorebirds-bird-data');
+	map.closePopup();
+
+	e.target.removeEventListener("click", wikiFromPopup);
+}
+
+function changeIsland(i) {
+	useData = (i == 0) ? cobb_data : hog_data;
+	birdMarkers.clearLayers();
+	habitatLayer.clearLayers();
+	tiles = new LandMap(map, useData, habitatLayer);
+	map.flyTo(useData.center);
+	home.setCenter(useData.center);
+}
+
+function changeDate(date) {
+	console.log("changing the date!");
+	if (date == -1) {
+		return;
+	}
+	if (!L.Browser.mobile && sfx.audioLoaded) {
+		console.log("resetting audio nodes because it's loaded");
+		sfx.reset(pop.getBirds());
+	}
+	pop.clearBirds().then(() => pop.generateBirds(useData, date, tiles));
+	
+	sc.popTable(date, pop.colorList, muteListener, listenSpeciesRow);
+
+	if (!L.Browser.mobile) {
+		sfx.setup(useData.birds_and_days[date].count, bird_data);
+		sfx.update(pop.getVisibleBirds(), pop.getBirds());	
+	}
+}
+
+// when the solo toggle in the wiki is clicked
 let soloState = 0;
-
 function soloListener(e) {
 	console.log("clicking on solo play");
 	let elem = e.target.closest(".solo-play-wrap");
@@ -170,6 +199,7 @@ function soloListener(e) {
 	sc.toggleSoloButton(soloState, elem);
 }
 
+// when the mute checkbox is clicked
 function muteListener(e) {
 	console.log(`species ${this.value}, muting? ${this.checked}`);
 	e.stopPropagation();
@@ -177,6 +207,7 @@ function muteListener(e) {
 	sfx.update(pop.getVisibleBirds(), pop.getBirds());
 }
 
+// when row in the chart has been clicked
 function listenSpeciesRow(e) {
 	console.log("clicked on a row");
 	let prev = shadow.querySelectorAll(".row-active");
@@ -196,9 +227,6 @@ function listenSpeciesRow(e) {
 
 	sc.sidebar.enablePanel("shorebirds-bird-data");
 }
-
-
-let audioStatus = L.control.messagebox({position: "bottomright"}).addTo(map);
 
 let soundStart = function() {
 	let val = sfx.hasAudioLoaded();
@@ -223,8 +251,9 @@ let soundStart = function() {
 		audioStatus.show("file load issue! try reloading this page.");
 	}
 };
+
 if (!L.Browser.mobile) {
-	soundStart();	
+	soundStart();
 }
 
 function startSafari() {

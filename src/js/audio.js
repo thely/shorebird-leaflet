@@ -2,11 +2,11 @@
 var L = require("leaflet");
 var C = require('chance').Chance();
 
-// import { AudioContext } from 'standardized-audio-context';
-// import { loadAudioBuffer } from 'audiobuffer-loader';
+import { AudioContext } from 'standardized-audio-context';
+import { loadAudioBuffer } from 'audiobuffer-loader';
 import SampleManager from 'sample-manager';
 import AudioNode from './audionode.js';
-import AudioStitcher from './audiostitch.js';
+// import AudioStitcher from './audiostitch.js';
 
 import { B_SOUNDFILE, B_SOUNDFOLDER, B_MAXNODES } from "./settings.js";
 import bird_data from "./data/all_bird_data.js";
@@ -17,18 +17,18 @@ function AudioManager() {
 
 	let type = (L.Browser.gecko) ? "ogg" : "mp3";
 	console.log("our type is " + type);
-	// this.mng = new SampleManager(this.ctx, B_SOUNDFOLDER, type);
-	this.stitch = new AudioStitcher(this.ctx, type);
+	this.mng = new SampleManager(this.ctx, B_SOUNDFOLDER, type);
+	// this.stitch = new AudioStitcher(this.ctx, type);
 
 	this.max = B_MAXNODES;
 	console.log("max nodes: "+B_MAXNODES);
 
 	// various buses
 	this.birdBus = this.ctx.createGain();
-	this.birdBus.gain.value = 1;
+	this.birdBus.gain.value = 1.2;
 
 	this.ambiBus = this.ctx.createGain();
-	this.ambiBus.gain.value = 0.2;
+	this.ambiBus.gain.value = 0.1;
 	
 	this.masterGain = this.ctx.createGain();
 	this.masterGain.gain.value = 0.5;
@@ -113,8 +113,8 @@ AudioManager.prototype.hasAudioLoaded = function() {
 }
 
 AudioManager.prototype.getBuffer = function() {
-	// return this.mng.getAllSamples()[0].audioBuffer;
-	return this.stitch.buffer;
+	return this.mng.getAllSamples()[0].audioBuffer;
+	// return this.stitch.buffer;
 }
 
 AudioManager.prototype.safariHack = function() {
@@ -185,6 +185,8 @@ AudioManager.prototype.update = function(birds, allBirds, habitat) {
 			enableNode.call(this, birds[i]);
 		}
 	}
+
+	// console.log(this.nodes);
 }
 
 function disableNode(i, allBirds) {
@@ -304,6 +306,8 @@ AudioManager.prototype.ambienceInit = function() {
 		this.ambiNodes.gains[i].connect(this.ambiBus);
 		this.ambiNodes.source[i].start(0, fileStartPos);
 	}
+
+	console.log(this.ambiNodes);
 }
 
 function habitatSquareAverage(sq) {
@@ -333,6 +337,7 @@ function habitatSquareAverage(sq) {
 
 AudioManager.prototype.playBackground = function(hab) {
 	let total = habitatSquareAverage(hab);
+	// console.log(total);
 
 	this.ambiNodes.gains[0].gain.linearRampToValueAtTime(total.blue, this.ctx.currentTime + 0.1);
 	this.ambiNodes.gains[1].gain.linearRampToValueAtTime(total.brown, this.ctx.currentTime + 0.1);
@@ -343,27 +348,10 @@ AudioManager.prototype.playBackground = function(hab) {
 // Helpers
 // ----------------------------------------
 function __loadFiles() {
-	this.stitch.loadAllFiles(progress => {
-		console.log(progress);
-		this.audioLoaded = progress;
-	}).then(() => {
-		console.log("sounds loaded!");
-		this.audioLoaded = true;
-		if (this.nodes.active.length == 0 && this.nodes.inactive.length == 0) {
-			this.makeNodes();
-		}
-	}).catch(e => {
-		console.log("audio problem!");
-		console.log(e);
-	});
-	
-	// console.time("fileLoad");
-	// let samps = [{ name: B_SOUNDFILE }];
-	// this.mng.addSamples(samps);
-	// this.mng.loadAllSamples(progress => {
+	// this.stitch.loadAllFiles(progress => {
+	// 	console.log(progress);
 	// 	this.audioLoaded = progress;
 	// }).then(() => {
-	// 	console.timeEnd("fileLoad");
 	// 	console.log("sounds loaded!");
 	// 	this.audioLoaded = true;
 	// 	if (this.nodes.active.length == 0 && this.nodes.inactive.length == 0) {
@@ -373,6 +361,23 @@ function __loadFiles() {
 	// 	console.log("audio problem!");
 	// 	console.log(e);
 	// });
+	
+	console.time("fileLoad");
+	let samps = [{ name: B_SOUNDFILE }];
+	this.mng.addSamples(samps);
+	this.mng.loadAllSamples(progress => {
+		this.audioLoaded = progress;
+	}).then(() => {
+		console.timeEnd("fileLoad");
+		console.log("sounds loaded!");
+		this.audioLoaded = true;
+		if (this.nodes.active.length == 0 && this.nodes.inactive.length == 0) {
+			this.makeNodes();
+		}
+	}).catch(e => {
+		console.log("audio problem!");
+		console.log(e);
+	});
 }
 
 // get just the names of new files to be added
