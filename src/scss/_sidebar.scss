@@ -75,5 +75,42 @@ table {
 			opacity: 0;
 		}
 	}
+
+	.home-alert {
+		font-weight: bold;
+
+		svg[data-prefix=fas] {
+			color: #228be6;
+			display: inline-block;
+			margin-bottom: -1px;
+			margin-right: 0.4em;
+			width: 13px;
+		}
+	}
+
+	.home-alert.no-sound {
+		.fa-layers {
+			display: inline-block;
+			height: 13px;
+			margin-bottom: -1px;
+			margin-right: 0.4em;
+			position: relative;
+			width: 15px;
+		}
+
+		svg[data-prefix=fas] {
+			color: red;
+			position: absolute;
+
+			&.fa-headphones {
+				top: -1px; left: 1.2px;
+				width: 13px;
+			}
+			&.fa-slash {
+				top: 0; left: 0;
+				width: 15px;
+			}
+		}
+	}
 }
 

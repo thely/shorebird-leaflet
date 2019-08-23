@@ -1,6 +1,9 @@
 // species table in the per-day chart
 #shorebirds-pop-table {
 	#bird-table {
+		margin: 2em 0;
+		width: 96%;
+
 		.bird-shade {
 			border: 0px solid transparent;
 		}
@@ -42,6 +45,46 @@
 				opacity: 1;
 			}
 		}
+
+		thead th {
+			font-weight: bold;
+		}
+
+		thead th:hover {
+			position: relative;
+
+			.tooltiptext {
+				background-color: white;
+				border: 2px solid rgba(0,0,0,0.3);
+				border-radius: 3px;
+				bottom: 130%;
+				display: block;
+				line-height: 1.15;
+				padding: 7px;
+				position: absolute;
+				width: 200px;
+			}
+		}
+
+		.tooltiptext {
+			display: none;
+		}
+
+		thead th:nth-of-type(1) .tooltiptext {
+			left: 0%;
+		}
+		thead th:nth-of-type(2) .tooltiptext {
+			left: -120%;
+		}
+		thead th:nth-of-type(3) .tooltiptext {
+			left: -140%;
+		}
+		thead th:nth-of-type(4) .tooltiptext, {
+			right: -60%;
+		}
+		thead th:nth-of-type(5) .tooltiptext {
+			right: 0%;
+		}
 	}
 
 	.pop-desc {
@@ -56,4 +99,7 @@
 		width: 11px;
 	}
 	
+	strong {
+		font-weight: bold;
+	}
 }

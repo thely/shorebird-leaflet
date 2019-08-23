@@ -19,6 +19,9 @@ function Population(map, layer, shadow) {
 	var tiles = {};
 	let center = map.getSize().divideBy(2);
 	this.colorList = [];
+	for (let i = 0; i < bird_data.length; i++) {
+		this.colorList[i] = C.color({format: "hex"});
+	}
 	let popupIndex = 0;
 
 	this.getBirds = function() {
@@ -29,10 +32,36 @@ function Population(map, layer, shadow) {
 		return this.visibleBirds;
 	}
 
+	this.clearBirds = function() {
+		let pop = this.birds.length;
+		return new Promise(function(resolve, reject) {
+			if (layer.getLayers().length == 0) {
+				resolve();
+			}
+			Array.from(layer.getLayers()).forEach(bird => {
+				bird.fadeOut(map).then(() => {
+					console.log("bird finished at dead");
+					pop--;
+					layer.removeLayer(bird);
+					if (pop == 0) {
+						resolve();
+					}
+					else {
+						console.log(pop);
+					}
+				}).catch(() => { 
+					console.log("what happened??"); 
+				});
+			});
+		});
+		
+	}
+
 	this.cancelHighlight = function() {
 		let prev = shadow.querySelectorAll(".species-active");
 		for (let item of prev) {
 			item.classList.toggle("species-active");
+			item.classList.add("species-inactive");
 		};
 
 		this.birds[popupIndex].closePopup();
@@ -44,6 +73,7 @@ function Population(map, layer, shadow) {
 		let next = shadow.querySelectorAll(".bird-icon-"+species);
 		for (let item of next) {
 			item.classList.add("species-active");
+			item.classList.remove("species-inactive");
 		};
 
 		for (let i = 0; i < this.birds.length; i++) {
@@ -86,30 +116,23 @@ function Population(map, layer, shadow) {
 		for (let i = 0; i < today.length; i++) { // species loop
 			if (today[i] > 0) {
 				let pop = Math.ceil(today[i] * B_POPSCALE);
-				let color = C.color({format: "hex"});
-				this.colorList[i] = color;
-				let icon = L.divIcon({
-					className: "bird-icon bird-icon-"+i,
-					html: makeMarkerIcon(color)
-				});
+				let baseClass = "bird-icon bird-icon-"+i; 
 
 				for (let j = 0; j < pop; j++) { // single bird loop
+					let icon = L.divIcon({
+						className: baseClass + " bird-id-"+bCount,
+						html: makeMarkerIcon(this.colorList[i], bird_data[i].common_name, "bird-id-"+bCount),
+						iconSize: [16, 16],
+						iconAnchor: [8, 15],
+						popupAnchor: [0, -15],
+						tooltipAnchor: [5, -7]
+					});
 					let b = makeBird.call(this, i, icon, bCount);
-					let bElem = shadow.querySelectorAll(".bird-icon.bird-icon-"+i)[j];
-					bElem.style.animationDelay = C.floating({min: 0.0, max: 0.6}) + "s";
-					bElem.classList.add("bird-live");
 					this.birds.push(b);
 					bCount++;
 				}
-
-				// shadow.querySelector(".bird-icon-"+i).style.
 			}
 		}
-
-		Array.from(shadow.querySelectorAll(".bird-icon")).forEach(bird => {
-			bird.addEventListener("animationend", animeListener);
-			bird.addEventListener("webkitAnimationStart", animeListener);
-		});
 	}
 
 	this.update = function(event) {
@@ -133,14 +156,16 @@ function Population(map, layer, shadow) {
 		let birdCoord = makeBirdPos(lat, useData.scaling);
 		let bird = L.birdMarker(birdCoord.latlng, {
 			icon: icon, 
-			iconSize: 70,
+			// iconSize: 70,
 			id: id,
 			center: center,
 			species: species,
 			info: bird_data[species],
 			wiki: wiki_data[species],
-			habitat: t.habitat
-		}).bindTooltip(bird_data[species].common_name).openTooltip()
+			habitat: t.habitat,
+			shadow: shadow
+		})
+		.bindTooltip(bird_data[species].common_name).openTooltip()
 		.on("click", function(e) {
 			let formatted = bird.displayWikiData(popData(species));
 			let popup = L.eventPopup({
@@ -150,22 +175,13 @@ function Population(map, layer, shadow) {
 			}).setContent(formatted);
 
 			bird.unbindPopup().bindPopup(popup).openPopup();
-		}).addTo(layer);
+		})
+		.addTo(layer);
 
 		return bird;
 	}
 
-	function animeListener(el) {
-		console.log("bird is done animating");
-		// console.log(el.target);
-		el.target.removeEventListener("animationend", animeListener);
-		el.target.removeEventListener("webkitAnimationEnd", animeListener);
-
-		// Array.from(shadow.querySelectorAll(".bird-icon")).forEach(bird => {
-		// 	bird.removeEventListener("animationend", animeListener);
-		// });
-	}
-
+	// population for a single species
 	function popData(species) {
 		let totalPop = useData.birds_and_days[dayIndex].count[species];
 		let showPop = Math.ceil(totalPop * B_POPSCALE);
@@ -198,10 +214,10 @@ function Population(map, layer, shadow) {
 		};
 	}
 
-	function makeMarkerIcon(color) {
+	function makeMarkerIcon(color, name, id) {
 		if (!color) color = "#000000";
 		
-		var svg = `<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+		var svg = `<svg version="1.1" id="${id}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 		 viewBox="0 0 356.139 356.139" xml:space="preserve">
 		<path d="M354.793,104.763c-2.511-1.906-9.18-6.971-12.648-19.905c-2.417-9.015-18.19-35.172-45.009-35.172 
 		c-4.276,0-8.707,0.663-13.17,1.97c-23.156,6.782-34.079,23.085-43.717,37.469c-3.076,4.591-5.981,8.927-9.078,12.604 
@@ -216,7 +232,10 @@ function Population(map, layer, shadow) {
 		c7.484,0.365,17.735,0.865,29.219,0.865c33.646,0,60.675-4.46,80.335-13.257c26.452-11.835,43.276-24.514,54.553-41.111
 		c13.366-19.672,18.459-45.152,15.569-77.895c-0.178-2.009,2.17-5.031,4.888-8.532c3.783-4.871,8.472-10.908,10.544-18.781
 		c2.347-0.872,6.162-1.731,10.187-2.637c3.687-0.83,7.498-1.688,11.026-2.716c0.431-0.125,0.733-0.447,0.81-0.861
-		C356.255,105.873,355.736,105.479,354.793,104.763z" fill="${color}" /></svg>`; 
+		C356.255,105.873,355.736,105.479,354.793,104.763z" fill="${color}" /></svg>
+		
+		`; 
+		// <span class="marker-bird-name">${name}</span>
 
 		return svg;
 	}

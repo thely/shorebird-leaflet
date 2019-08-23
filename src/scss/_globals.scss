@@ -16,6 +16,11 @@ h4 {
 	font-size: 14px;
 }
 
+h5 {
+	font-size: 1.1em;
+	margin-bottom: 0.5em;
+}
+
 p {
 	margin: 15px 0;
 }
@@ -45,32 +50,55 @@ svg[data-prefix="fas"] {
 
 // Bird icon sizes/styles
 .bird-icon {
-	height: 16px;
-	opacity: 0;
-	width: 16px;
+	// height: 16px;
+	// opacity: 0;
+	// width: 16px;
 }
 
 .bird-icon svg {
-	stroke: grey;
+	opacity: 0;
+	stroke: rgba(0,0,0,0.5);
 	stroke-width: 22px;
 }
 
-.bird-icon.bird-die {
-	animation: bird-exist 0.5s;
-	animation-direction: reverse;
+.bird-icon.bird-die svg {
+	animation: bird-death 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+	// animation-direction: reverse;
+	animation-fill-mode: forwards;
+	opacity: 1;
+
+	// height: 0;
+	// transition: width 0.2s, height 0.2s;
+	// width: 0;
 }
 
-.bird-icon.bird-live {
+.bird-icon.bird-live svg {
 	animation: bird-exist 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 	animation-fill-mode: forwards;
 	// animation-delay: 2s;
 }
 
+@keyframes bird-death {
+	0% {
+		height: 100%;
+		// opacity: 1;
+		width: 100%;
+	}
+	99% {
+		// opacity: 0;
+	}
+	100% {
+		height: 0;
+		// opacity: 0;
+		width: 0;
+	}
+}
+
 @keyframes bird-exist {
 	0% {
-		margin-right: -50px;
-		margin-top: 20px;
 		height: 0;
+		margin-right: -50%;
+		margin-top: 50%;
 		opacity: 0;
 		width: 0;
 	}
@@ -78,27 +106,50 @@ svg[data-prefix="fas"] {
 		opacity: 1;
 	}
 	100% {
-		margin-right: 0px;
-		margin-top: 0px;
-		height: 12px;
+		
+		height: 100%;
+		margin-right: 0;
+		margin-top: 0;
 		opacity: 1;
-		width: 12px;
+		width: 100%;
 	}
+}
+
+.marker-bird-name {
+	--shadow-color: rgba(255,255,255,0.5);
+	color: #0867c0;
+	font-size: 10px;
+	left: 2.2em; top: -1px;
+	opacity: 0;
+	position: absolute;
+	text-shadow: 	1px 1px 0 var(--shadow-color),
+					-1px 1px 0 var(--shadow-color),
+					1px -1px 0 var(--shadow-color),
+					-1px -1px 0 var(--shadow-color);
+	width: 100px;
+}
+
+.marker-bird-name.show-name {
+	opacity: 1;
 }
 
 .bird-icon.species-active {
 	filter: drop-shadow(2px 3px 3px rgba(0,0,0,0.6));
-	height: 18px !important;
+	height: 20px !important;
 	margin-left: -9px !important;
-	margin-top: -9px !important;
-	transition: width 0.5s, height 0.5s;
-	width: 18px !important;
+	margin-top: -16px !important;
+	transition: width 0.2s, height 0.2s, margin-left 0.2s, margin-top 0.2s;
+	width: 20px !important;
 	z-index: 999 !important;
 
 	svg {
 		stroke: black;
 		stroke-width: 14px;
 	}
+}
+
+.bird-icon.species-inactive {
+	transition: width 0.1s, height 0.1s, margin-left 0.1s, margin-top 0.1s;
 }
 
 //volume slider and mute
@@ -119,6 +170,11 @@ svg[data-prefix="fas"] {
 		svg.fa-volume-down {
 			width: 11px;
 		}
+	}
+
+	.volume-mute, .volume-mute:hover {
+		display: flex;
+		border-bottom: 0px solid transparent;
 	}
 
 	input[type=range] {
