@@ -521,8 +521,8 @@ var wiki_data = [
       "name":"RLLLNG",
       "title":"Clapper Rail",
       "url":"https://en.wikipedia.org/wiki/Mangrove_rail",
-      "summary":"The mangrove rail (Rallus longirostris) is a species of bird in the family Rallidae. It is found in Central and South America.  It was formerly considered conspecific with the clapper rail (Rallus crepitans). Its natural habitats are subtropical or tropical mangrove forests and coastal saline lagoons. It is threatened by habitat loss...",
-      "image":"https://upload.wikimedia.org/wikipedia/commons/b/b9/Rallus_longirostris_-_1700-1880_-_Print_-_Iconographia_Zoologica_-_Special_Collections_University_of_Amsterdam_-_UBA01_IZ17500025.tif"
+      "summary":"The clapper rail (Rallus crepitans) is a member of the rail family, Rallidae. The taxonomy for this species is confusing and still being determined. The Ridgway's rail and the mangrove rail have been recently split. Furthermore, some taxonomists consider that the king rail and Aztec rail should be considered within this group, as those birds look similar and the birds are known to interbreed where they share territories. ",
+      "image":"https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Rallus_crepitans.jpg/603px-Rallus_crepitans.jpg"
    },
    {
       "name":"RPRRPR",
