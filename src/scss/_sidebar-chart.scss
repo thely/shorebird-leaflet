@@ -1,7 +1,7 @@
 // species table in the per-day chart
 #shorebirds-pop-table {
 	#bird-table {
-		margin: 2em 0;
+		margin: 1em 0 2em 0;
 		width: 96%;
 
 		.bird-shade {
@@ -94,12 +94,13 @@
 			padding-left: 2em;
 		}	
 	}
-
-	.link-away svg {
-		width: 11px;
-	}
 	
 	strong {
 		font-weight: bold;
+	}
+
+	.mute-all-wrap {
+		padding-right: 1.2em;
+		text-align: right;
 	}
 }
