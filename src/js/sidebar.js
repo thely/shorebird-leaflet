@@ -12,9 +12,9 @@ import land_types from './data/land_types.js';
 import { B_POPSCALE } from "./settings.js";
 
 import { library, icon, layer } from '@fortawesome/fontawesome-svg-core';
-import { faBars, faChartBar, faSearch, faMap, faPlayCircle, faPauseCircle, faCaretLeft, faHeadphones, faSlash, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faChartBar, faSearch, faMap, faPlayCircle, faPauseCircle, faCaretLeft, faHeadphones, faSlash, faQuestionCircle, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 
-library.add(faBars, faChartBar, faSearch, faMap, faPlayCircle, faPauseCircle, faCaretLeft, faHeadphones, faSlash, faQuestionCircle);
+library.add(faBars, faChartBar, faSearch, faMap, faPlayCircle, faPauseCircle, faCaretLeft, faHeadphones, faSlash, faQuestionCircle, faLayerGroup);
 
 // land types, usedata
 function SidebarContainer(map, shadow, useData) {
@@ -23,6 +23,10 @@ function SidebarContainer(map, shadow, useData) {
 		container: 'sidebar'
 		// autopan: true
 	}).addTo(map);
+
+	function toTopOfPane() {
+		shadow.querySelector(".leaflet-sidebar-content").scrollTop = 0;
+	}
 
 	this.init = function(islandCallback, dateCallback) {
 		this.sidebar.addPanel({
@@ -52,7 +56,7 @@ function SidebarContainer(map, shadow, useData) {
 			id: "shorebirds-pop-table",
 			tab: icon(faChartBar).html,
 			title: "Population Data",
-			pane: "<p class='pop-summary'>Select a day to view population data.</p><table id='bird-table'></table><div class='pop-desc'></div>",
+			pane: "<div class='pop-summary'>Select a day to view population data.</div><table id='bird-table'></table><div class='pop-desc'></div>",
 		}).disablePanel("shorebirds-pop-table");
 
 		this.sidebar.addPanel({
@@ -69,7 +73,8 @@ function SidebarContainer(map, shadow, useData) {
 			pane: `<p>A land use map breaks up a region into square segments of a given real-world size.
 			 The most dominant habitat
 			 type defines the region. Below are the habitats present on Cobb and Hog islands.</p>
-			 <p>To see the land use map as an overlay, enable it via the layers control.</p>
+			 <p>To see the land use map as an overlay, enable it via the <span class="link-away">
+			 ${icon(faLayerGroup).html}</span> layers control in the upper right of the map.</p>
 			 ${generateLandUseLegend()}`,
 		});
 
@@ -141,6 +146,10 @@ function SidebarContainer(map, shadow, useData) {
 			this.sidebar.close();
 			date_sel.classList.remove("drop-glow");
 		});
+
+		this.sidebar.on("content", function(e) {
+			toTopOfPane();
+		})
 	}
 
 	// alert the user to no audio if they're on mobile
@@ -180,6 +189,8 @@ function SidebarContainer(map, shadow, useData) {
 				soloCallback(e);
 			});
 		}
+
+		toTopOfPane();
 	}
 
 	this.toggleSoloButton = function(soloState, elem) {
@@ -249,11 +260,13 @@ function SidebarContainer(map, shadow, useData) {
 // Chart
 // ----------------------------------------
 
-	this.popTable = function(day, colorList, muteCallback, rowCallback) {
+	this.popTable = function(day, colorList, muteCallback, muteAllCallback, rowCallback) {
 		let today = useData.birds_and_days[day];
 		let p = `<p>The table below shows all population data for birds on ${today.date} 
 				 at ${useData.name}. Hover over the table headers for more information; if you are on mobile,
-				 a brief explanation of each is below the table.</p>`;
+				 a brief explanation of each is below the table.</p>
+				 <p class="mute-all-wrap"><input type="checkbox" class="mute-all" id="species-mute-all">
+				 	<label for="species-mute-all">Mute all species</label></p>`;
 		let list = `
 				 <p><strong>All Day vs Scaled.</strong> All Day numbers represent the total number
 				 of birds surveyed on ${today.date}; the Scaled number is what's displayed, scaled by 1/24.</p>
@@ -262,6 +275,10 @@ function SidebarContainer(map, shadow, useData) {
 				 <span class="link-away">${icon(faSearch).html} Species Data</span> tab.</p>
 				 <p><strong>Mute a species.</strong> Muting a species frees up audio channels for other
 				 birds. This is best used on a high-population species.</p>`;
+		let hasMute = (L.Browser.mobile) ? "" : `<th data-sort-method="none">Mute
+				<span class="tooltiptext">Click to mute the audio for all displayed birds of this species.
+				Muting a species will free up audio channels for other birds, if one species is dominating
+				the soundscape.</span></th>`;
 		let content = `<thead><tr>
 			<th data-sort-default>Species
 				<span class="tooltiptext">The common name for this species. For more information, click on a
@@ -276,11 +293,7 @@ function SidebarContainer(map, shadow, useData) {
 			<th data-sort-method="none">Color
 				<span class="tooltiptext">The color of this species' icon on the map.</span>
 			</th>
-			<th data-sort-method="none">Mute
-				<span class="tooltiptext">Click to mute the audio for all displayed birds of this species.
-				Muting a species will free up audio channels for other birds, if one species is dominating
-				the soundscape.</span>
-			</th>
+			${hasMute}
 			</tr></thead><tbody>`;
 		for (let i = 0; i < today.count.length; i++) {
 			if (today.count[i] > 0) {
@@ -291,7 +304,7 @@ function SidebarContainer(map, shadow, useData) {
 				<td class="bird-shade" style="background-color: ${colorList[i]};">&nbsp;</td>`;
 
 				if (!L.Browser.mobile) {
-					content += `<td><input type="checkbox" id="species-mute-${i}" value="${i}" /></td>`;	
+					content += `<td><input type="checkbox" id="species-mute-${i}" value="${i}" class="species-mute" /></td>`;	
 				}
 				
 				content += `</tr>`;
@@ -310,18 +323,20 @@ function SidebarContainer(map, shadow, useData) {
 				if (!L.Browser.mobile) {
 					let check = shadow.querySelector("input#species-mute-"+i);
 					check.addEventListener("click", muteCallback);
-				
-					// full row listener
-					shadow.getElementById("table-species-"+i)
-						.addEventListener("click", rowCallback);
-
-				// checkbox mute listeners
-				// "click".split(" ")
-				//     .map(name => check.addEventListener(name, function(e) {
-				//     }, false));
 				}
+				// full row listener
+				shadow.getElementById("table-species-"+i)
+					.addEventListener("click", rowCallback);
 			}
 		}
+
+		shadow.querySelector("input.mute-all").addEventListener("click", muteAllCallback);
+
+		toTopOfPane();
+	}
+
+	this.changeHighlight = function(species) {
+		shadow.querySelector("#shorebirds-bird-wiki .highlight-toggle").innerHTML = "This species is higlighted. Click to undo.";
 	}
 
 // ----------------------------------------

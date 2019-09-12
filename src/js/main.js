@@ -36,6 +36,7 @@ shadow.appendChild(mapdiv);
 L.Icon.Default.imagePath = 'node_modules/leaflet/dist/images/';
 
 let useData = cobb_data;
+let today = {};
 let map = L.map(mapdiv, {
 	zoomSnap: 0.25,
 	zoomControl: false,
@@ -135,7 +136,11 @@ map.on("click", function(e) {
 map.on("popupopen", function(e){
 	sc.sidebar.enablePanel("shorebirds-bird-data");
 	// sc.replaceWikiPane(e.popup.options.species, soloListener);
-	console.log("it open");
+	if (pop.theHighlight == e.popup.options.species) {
+		console.log("I'm highlighted!!");
+
+		shadow.querySelector("highlight-toggle")
+	}
 
 	setTimeout(function() {
 		console.log("adding timer");
@@ -173,13 +178,15 @@ function changeDate(date) {
 	if (date == -1) {
 		return;
 	}
+	today = useData["birds_and_days"][date].count;
+
 	if (!L.Browser.mobile && sfx.audioLoaded) {
 		console.log("resetting audio nodes because it's loaded");
 		sfx.reset(pop.getBirds());
 	}
 	pop.clearBirds().then(() => pop.generateBirds(useData, date, tiles));
 	
-	sc.popTable(date, pop.colorList, muteListener, listenSpeciesRow);
+	sc.popTable(date, pop.colorList, muteListener, muteAllListener, listenSpeciesRow);
 
 	if (!L.Browser.mobile) {
 		sfx.setup(useData.birds_and_days[date].count, bird_data);
@@ -205,6 +212,24 @@ function muteListener(e) {
 	e.stopPropagation();
 	sfx.muteSpecies(this.value, this.checked, pop.getBirds());
 	sfx.update(pop.getVisibleBirds(), pop.getBirds());
+}
+
+function muteAllListener(e) {
+	console.log("Inside the muteAlll listener");
+	sfx.muteAllSpecies(this.checked, pop.getVisibleBirds(), pop.getBirds(), today);
+
+	for (const b of shadow.querySelectorAll("input.species-mute")) {
+		b.checked = this.checked;
+	}
+}
+
+function highlightSpeciesControls(e) {
+	if (pop.highlight) {
+		shadow.querySelector("#shorebirds-bird-wiki .highlight-toggle").innerHTML = "This species is higlighted. Click to undo.";
+	}
+	else {
+		shadow.querySelector("#shorebirds-bird-wiki .highlight-toggle").innerHTML = "Click to highlight all birds in this species";
+	}	
 }
 
 // when row in the chart has been clicked

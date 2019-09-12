@@ -13,7 +13,7 @@ import bird_data from "./data/all_bird_data.js";
 import ambience from './data/ambient_sound.js';
 
 function AudioManager() {
-	this.ctx = new AudioContext();
+	this.ctx = new AudioContext({sampleRate: 44100});
 
 	let type = (L.Browser.gecko) ? "ogg" : "mp3";
 	console.log("our type is " + type);
@@ -101,11 +101,17 @@ AudioManager.prototype.makeNodes = function() {
 }
 
 AudioManager.prototype.reset = function(allBirds) {
+	// for (var i = this.nodes.active.length - 1; i >= 0; i--) {
+	// 	disableNode.call(this, i, allBirds);
+	// }
+	this.resetNodes(allBirds);
+	this.muteList = [];
+}
+
+AudioManager.prototype.resetNodes = function(allBirds) {
 	for (var i = this.nodes.active.length - 1; i >= 0; i--) {
 		disableNode.call(this, i, allBirds);
 	}
-
-	this.muteList = [];
 }
 
 AudioManager.prototype.hasAudioLoaded = function() {
@@ -230,6 +236,24 @@ AudioManager.prototype.moveVisibleNode = function(b, n) {
 // ----------------------------------------
 // Volume: Mute/Solo/Master
 // ----------------------------------------
+AudioManager.prototype.muteAllSpecies = function(val, birds, allBirds, today) {
+	this.muteList = [];
+	if (val == 0) {
+		this.update(birds, allBirds);
+		return;
+	}
+	else {
+		for (let i = 0; i < today.length; i++) {
+			if (today[i] > 0) {
+				this.muteList.push(i);
+			}
+		}
+		
+		this.resetNodes(allBirds);	
+	}
+	
+}
+
 AudioManager.prototype.muteSpecies = function(spec, muted, allBirds) {
 	let species = parseInt(spec);
 	if (muted && this.muteList.indexOf(species) == -1) {
