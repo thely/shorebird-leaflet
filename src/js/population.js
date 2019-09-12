@@ -19,6 +19,7 @@ function Population(map, layer, shadow) {
 	var tiles = {};
 	let center = map.getSize().divideBy(2);
 	this.colorList = [];
+	this.highlight = -1;
 	for (let i = 0; i < bird_data.length; i++) {
 		this.colorList[i] = C.color({format: "hex"});
 	}
@@ -32,6 +33,7 @@ function Population(map, layer, shadow) {
 		return this.visibleBirds;
 	}
 
+	// delete all birds, engaging fadeout in the process
 	this.clearBirds = function() {
 		let pop = this.birds.length;
 		return new Promise(function(resolve, reject) {
@@ -58,6 +60,7 @@ function Population(map, layer, shadow) {
 	}
 
 	this.cancelHighlight = function() {
+		this.highlight = -1;
 		let prev = shadow.querySelectorAll(".species-active");
 		for (let item of prev) {
 			item.classList.toggle("species-active");
@@ -69,6 +72,7 @@ function Population(map, layer, shadow) {
 
 	this.highlightSpecies = function(species) {
 		this.cancelHighlight();
+		this.highlight = species;
 
 		let next = shadow.querySelectorAll(".bird-icon-"+species);
 		for (let item of next) {
@@ -84,7 +88,6 @@ function Population(map, layer, shadow) {
 					maxHeight: 300,
 					species: this.birds[i].options.species
 				}).setContent(formatted);
-				// console.log(popup);
 
 				popupIndex = i;
 				this.birds[i].unbindPopup().bindPopup(popup).openPopup();

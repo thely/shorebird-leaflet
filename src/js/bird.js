@@ -26,17 +26,12 @@ L.BirdMarker = L.Marker.extend({
 		shadow: null
 	},
 	onAdd: function(map) {
-		// console.log(this);
-		// let bElem = shadow.querySelector(this.getIcon().options.className);
-		// bElem.style.animationDelay = C.floating({min: 0.0, max: 0.6}) + "s";
-		
 		L.Marker.prototype.onAdd.call(this, map);
 		this._classNames = this.getIcon().options.className.split(" ");
 		this._elem = this.options.shadow.querySelector("." + this._classNames[2]);
 		this._child = this._elem.children[0];
 		this._child.style.animationDelay = C.floating({min: 0.0, max: 0.6}) + "s";
 		this._elem.classList.add("bird-live");
-		// console.log(L.DomUtil.get(id));
 	},
 	fadeOut: function(map) {
 		return new Promise((resolve, reject) => {
@@ -75,6 +70,9 @@ L.BirdMarker = L.Marker.extend({
 
 		return { azimuth: angle, distance: dist };
 	},
+	// highlight: function(isActive) {
+	// 	this.hasHighlight = isActive;
+	// },
 	displayWikiData: function(speciesData) {
 		let content = 
 			`	
