@@ -1,7 +1,10 @@
 var L = require("leaflet");
+var Tablesort = require('tablesort');
+window.Tablesort = Tablesort;
+console.log("tablesort?");
+console.log(Tablesort);
 import "leaflet-sidebar-v2/js/leaflet-sidebar.min.js";
-var tablesort = require('tablesort');
-import "tablesort/src/sorts/tablesort.number.js";
+require("tablesort/src/sorts/tablesort.number.js");
 
 import cobb_data from './data/cobb_data.js';
 import hog_data  from './data/hog_data.js';
@@ -314,8 +317,8 @@ function SidebarContainer(map, shadow, useData) {
 
 		shadow.querySelector(".pop-summary").innerHTML = p;
 		shadow.querySelector(".pop-desc").innerHTML = list;
-		shadow.getElementById("bird-table").innerHTML = content;
-		tablesort(shadow.getElementById("bird-table"));
+    shadow.getElementById("bird-table").innerHTML = content;
+		Tablesort(shadow.getElementById("bird-table"));
 		
 		// if name is clicked in panel, show on map
 		for (let i = 0; i < today.count.length; i++) {
